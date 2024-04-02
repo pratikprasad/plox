@@ -19,13 +19,13 @@ class Scanner:
     def __repr__(self):
         return f"{self.line},{self.current}, {self.tokens}, {self.source}"
 
-    def isAtEnd(self):
-        return self.current >= len(self.source)
+    def isAtEnd(self, offset=0):
+        return (self.current + offset) >= len(self.source)
 
-    def peek(self):
-        if self.isAtEnd():
+    def peek(self, offset=0):
+        if self.isAtEnd(offset):
             return "\0"
-        return self.source[self.current]
+        return self.source[self.current + offset]
 
     def advance(self) -> str:
         """Advance the `current` counter by one and return the character at the current position."""
@@ -44,6 +44,24 @@ class Scanner:
 
         self.current += 1
         return True
+
+    def isDigit(self, c):
+        return c >= "0" and c <= "9"
+
+    def number(self):
+        """
+        Returns a number token.
+        """
+        while self.isDigit(self.peek()):
+            self.advance()
+
+        if self.peek() == "." and self.isDigit(self.peek(1)):
+            self.advance()
+
+        while self.isDigit(self.peek()):
+            self.advance()
+
+        self.addToken(TokenType.NUMBER, float(self.source[self.start : self.current]))
 
     def string(self):
         """
@@ -107,6 +125,8 @@ class Scanner:
                 self.line += 1
         elif char == '"':
             self.string()
+        elif self.isDigit(char):
+            self.number()
         else:
             # TODO: Handle errors nicely
             print(self.line, f"Unexpected character found: {char}")

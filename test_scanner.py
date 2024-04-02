@@ -58,3 +58,13 @@ class TestScanner(unittest.TestCase):
                 Token.fromTokenType(TokenType.EOF, 1),
             ],
         )
+
+    def testNumber(self):
+        sc = Scanner("123.432")
+        self.assertListEqual(
+            sc.scanTokens(),
+            [
+                Token(TokenType.NUMBER, "123.432", 123.432, 1),
+                Token.fromTokenType(TokenType.EOF, 1),
+            ],
+        )
