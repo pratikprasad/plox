@@ -14,7 +14,7 @@ class TokenType(Enum):
     PLUS = "+"
     SEMICOLON = ";"
     SLASH = "/"
-    STAR = "/"
+    STAR = "*"
 
     BANG = "!"
     BANG_EQUAL = "!="
@@ -46,21 +46,23 @@ class TokenType(Enum):
     VAR = "var"
     WHILE = "while"
 
-    EOF = "EOF"
+    EOF = ""
 
 
 SINGLE_CHAR_LEXEMES = {
-    TokenType.LEFT_PAREN,
-    TokenType.RIGHT_PAREN,
-    TokenType.LEFT_BRACE,
-    TokenType.RIGHT_BRACE,
-    TokenType.COMMA,
-    TokenType.DOT,
-    TokenType.MINUS,
-    TokenType.PLUS,
-    TokenType.SEMICOLON,
-    TokenType.SLASH,
-    TokenType.STAR,
+    tp.value
+    for tp in [
+        TokenType.LEFT_PAREN,
+        TokenType.RIGHT_PAREN,
+        TokenType.LEFT_BRACE,
+        TokenType.RIGHT_BRACE,
+        TokenType.COMMA,
+        TokenType.DOT,
+        TokenType.MINUS,
+        TokenType.PLUS,
+        TokenType.SEMICOLON,
+        TokenType.STAR,
+    ]
 }
 
 
@@ -71,3 +73,7 @@ class Token(NamedTuple):
     lexeme: str
     literal: object
     line: int
+
+    @classmethod
+    def fromTokenType(cls, t_type: TokenType, line: int):
+        return Token(t_type, t_type.value, None, line)
