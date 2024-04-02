@@ -48,3 +48,13 @@ class TestScanner(unittest.TestCase):
                 Token.fromTokenType(TokenType.EOF, 1),
             ],
         )
+
+    def testString(self):
+        sc = Scanner('"ham sandwich"')
+        self.assertListEqual(
+            sc.scanTokens(),
+            [
+                Token(TokenType.STRING, '"ham sandwich"', "ham sandwich", 1),
+                Token.fromTokenType(TokenType.EOF, 1),
+            ],
+        )

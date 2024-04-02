@@ -45,8 +45,27 @@ class Scanner:
         self.current += 1
         return True
 
+    def string(self):
+        """
+        Returns a string Token.
+        Assumes that current token is "
+        """
+        while self.peek() != '"' and not self.isAtEnd():
+            if self.peek() == "\n":
+                self.line += 1
+            self.advance()
+
+        if self.isAtEnd():
+            # TODO: Handle errors nicely
+            print(self.line, f"Unterminated string in line: {self.line}")
+
+        # Closing quote
+        self.advance()
+
+        value = self.source[self.start + 1 : self.current - 1]
+        self.addToken(TokenType.STRING, value)
+
     def addToken(self, type: TokenType, literal: object = None):
-        """ """
         lexeme = self.source[self.start : self.current]
         self.tokens.append(Token(type, lexeme, literal, self.line))
 
@@ -86,6 +105,8 @@ class Scanner:
         elif char.isspace():
             if char == "\n":
                 self.line += 1
+        elif char == '"':
+            self.string()
         else:
             # TODO: Handle errors nicely
             print(self.line, f"Unexpected character found: {char}")
