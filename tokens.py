@@ -65,6 +65,28 @@ SINGLE_CHAR_LEXEMES = {
     ]
 }
 
+RESERVED_KEYWORDS = {
+    tp.value
+    for tp in [
+        TokenType.AND,
+        TokenType.CLASS,
+        TokenType.ELSE,
+        TokenType.FALSE,
+        TokenType.FOR,
+        TokenType.FUN,
+        TokenType.IF,
+        TokenType.NIL,
+        TokenType.OR,
+        TokenType.PRINT,
+        TokenType.RETURN,
+        TokenType.SUPER,
+        TokenType.THIS,
+        TokenType.TRUE,
+        TokenType.VAR,
+        TokenType.WHILE,
+    ]
+}
+
 
 class Token(NamedTuple):
     """A lexical token."""

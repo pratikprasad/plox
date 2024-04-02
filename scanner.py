@@ -1,5 +1,5 @@
 from typing import List, Optional
-from tokens import Token, TokenType, SINGLE_CHAR_LEXEMES
+from tokens import Token, TokenType, SINGLE_CHAR_LEXEMES, RESERVED_KEYWORDS
 
 
 class Scanner:
@@ -47,6 +47,19 @@ class Scanner:
 
     def isDigit(self, c):
         return c >= "0" and c <= "9"
+
+    def isAlpha(self, c):
+        return c == "_" or (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
+
+    def identifier(self):
+        while self.isAlpha(self.peek()) or self.isDigit(self.peek()):
+            self.advance()
+
+        type = TokenType.IDENTIFIER
+        text = self.source[self.start : self.current]
+        if text in RESERVED_KEYWORDS:
+            type = TokenType(text)
+        self.addToken(type)
 
     def number(self):
         """
@@ -127,6 +140,8 @@ class Scanner:
             self.string()
         elif self.isDigit(char):
             self.number()
+        elif self.isAlpha(char):
+            self.identifier()
         else:
             # TODO: Handle errors nicely
             print(self.line, f"Unexpected character found: {char}")

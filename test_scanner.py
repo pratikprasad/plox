@@ -68,3 +68,28 @@ class TestScanner(unittest.TestCase):
                 Token.fromTokenType(TokenType.EOF, 1),
             ],
         )
+
+    def testIdentifier(self):
+        sc = Scanner("name = value")
+        self.assertListEqual(
+            sc.scanTokens(),
+            [
+                Token(TokenType.IDENTIFIER, "name", None, 1),
+                Token(TokenType.EQUAL, "=", None, 1),
+                Token(TokenType.IDENTIFIER, "value", None, 1),
+                Token.fromTokenType(TokenType.EOF, 1),
+            ],
+        )
+
+    def testKeyWords(self):
+        sc = Scanner("var name = value")
+        self.assertListEqual(
+            sc.scanTokens(),
+            [
+                Token(TokenType.VAR, "var", None, 1),
+                Token(TokenType.IDENTIFIER, "name", None, 1),
+                Token(TokenType.EQUAL, "=", None, 1),
+                Token(TokenType.IDENTIFIER, "value", None, 1),
+                Token.fromTokenType(TokenType.EOF, 1),
+            ],
+        )
