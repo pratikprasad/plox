@@ -2,6 +2,14 @@ from typing import List, Optional
 from tokens import Token, TokenType, SINGLE_CHAR_LEXEMES, RESERVED_KEYWORDS
 
 
+def isDigit(c):
+    return c >= "0" and c <= "9"
+
+
+def isAlpha(c):
+    return c == "_" or (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
+
+
 class Scanner:
     """Scans a string and returns tokens."""
 
@@ -45,14 +53,8 @@ class Scanner:
         self.current += 1
         return True
 
-    def isDigit(self, c):
-        return c >= "0" and c <= "9"
-
-    def isAlpha(self, c):
-        return c == "_" or (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
-
     def identifier(self):
-        while self.isAlpha(self.peek()) or self.isDigit(self.peek()):
+        while isAlpha(self.peek()) or isDigit(self.peek()):
             self.advance()
 
         type = TokenType.IDENTIFIER
@@ -65,13 +67,13 @@ class Scanner:
         """
         Returns a number token.
         """
-        while self.isDigit(self.peek()):
+        while isDigit(self.peek()):
             self.advance()
 
-        if self.peek() == "." and self.isDigit(self.peek(1)):
+        if self.peek() == "." and isDigit(self.peek(1)):
             self.advance()
 
-        while self.isDigit(self.peek()):
+        while isDigit(self.peek()):
             self.advance()
 
         self.addToken(TokenType.NUMBER, float(self.source[self.start : self.current]))
@@ -138,9 +140,9 @@ class Scanner:
                 self.line += 1
         elif char == '"':
             self.string()
-        elif self.isDigit(char):
+        elif isDigit(char):
             self.number()
-        elif self.isAlpha(char):
+        elif isAlpha(char):
             self.identifier()
         else:
             # TODO: Handle errors nicely
