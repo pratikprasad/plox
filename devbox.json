@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.2/.schema/devbox.schema.json",
   "packages": [
     "python3@latest",
-    "lazygit@latest"
+    "lazygit@latest",
+    "neovim@latest"
   ],
   "shell": {
     "init_hook": [
