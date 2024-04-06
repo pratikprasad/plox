@@ -1,6 +1,6 @@
 from expr import *
 from tokens import *
-from parser import * 
+from parser import *
 
 import unittest
 
@@ -12,13 +12,13 @@ expr = Binary(
 
 assert repr(expr) == "(* (- 123) (group 45.67))", "AST Classes broken"
 
+
 def Eval(text):
     expr = Parse(text)
     return expr.evaluate()
 
+
 class TestExpr(unittest.TestCase):
     def testUnary(self):
-        self.assertEqual(
-            Eval("-2"),
-            -2
-        )
+        self.assertEqual(Eval("-2"), -2)
+        self.assertEqual(Eval("--2"), 2)
