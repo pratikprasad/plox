@@ -15,6 +15,8 @@ class TokenType(Enum):
     SEMICOLON = ";"
     SLASH = "/"
     STAR = "*"
+    QUESTION = "?"
+    COLON = ":"
 
     BANG = "!"
     BANG_EQUAL = "!="
@@ -62,6 +64,8 @@ SINGLE_CHAR_LEXEMES = {
         TokenType.PLUS,
         TokenType.SEMICOLON,
         TokenType.STAR,
+        TokenType.QUESTION,
+        TokenType.COLON
     ]
 }
 

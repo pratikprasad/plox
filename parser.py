@@ -1,7 +1,7 @@
 from typing import List
 from dataclasses import dataclass
 
-from expr import *
+from expr import Unary, Binary, Literal, Grouping, Ternary
 from tokens import *
 from scanner import Scanner
 
@@ -44,12 +44,13 @@ class TokenIter:
 
 
 """
+Probably the reason he wrote it as one pass was so that you don't have to keep adding and changing the value of `expr`.
+
 Version 1
 
     expression -> primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 
-Probably the reason he wrote it as one pass was so that you don't have to keep adding and changing the value of `expr`.
 
 
 Version 2
@@ -58,22 +59,117 @@ Version 2
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 
-Probably the reason he wrote it as one pass was so that you don't have to keep adding and changing the value of `expr`.
+Version 3
+
+    expression -> factor
+    factor -> unary ( ("\" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 4
+
+    expression -> term
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary ( ("\" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 5
+
+    expression -> comparison
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary ( ("\" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 6
+
+    expression -> comma
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary ( ("\" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 7
+
+    expression -> ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary ( ("\" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 """
 
 
-def expression(ti: TokenIter) -> Expr:
-    return unary(ti)
+def expression(ti: TokenIter):
+    return ternary(ti)
+
+
+def ternary(ti: TokenIter):
+    test = comma(ti)
+    if not ti.match(TokenType.QUESTION):
+        return test
+
+    left = comma(ti)
+    if not ti.match(TokenType.COLON):
+        raise Exception("Expected colon for ternary operator")
+    right = comma(ti)
+
+    return Ternary(test, left, right)
+
+
+def comma(ti: TokenIter):
+    out = equality(ti)
+    while ti.match(TokenType.COMMA):
+        out = Binary(out, ti.previous(), equality(ti))
+    return out
+
+
+def equality(ti):
+    out = comparison(ti)
+    while ti.match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
+        out = Binary(out, ti.previous(), comparison(ti))
+    return out
+
+
+def comparison(ti):
+    out = term(ti)
+    while ti.match(
+        TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL
+    ):
+        out = Binary(out, ti.previous(), term(ti))
+    return out
+
+
+def term(ti):
+    out = factor(ti)
+    while ti.match(TokenType.PLUS, TokenType.MINUS):
+        out = Binary(out, ti.previous(), factor(ti))
+
+    return out
+
+
+def factor(ti):
+    out = unary(ti)
+    while ti.match(TokenType.STAR, TokenType.SLASH):
+        out = Binary(out, ti.previous(), unary(ti))
+
+    return out
 
 
 def unary(ti):
     if ti.match(TokenType.BANG, TokenType.MINUS):
         return Unary(ti.previous(), unary(ti))
-    else:
-        return primary(ti)
+
+    return primary(ti)
 
 
-def primary(ti: TokenIter) -> Expr:
+def primary(ti: TokenIter):
     if ti.match(TokenType.FALSE):
         return Literal(False)
     if ti.match(TokenType.TRUE):
@@ -89,8 +185,8 @@ def primary(ti: TokenIter) -> Expr:
         ti.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
         return Grouping(expr)
 
-    # TODO wat to do
-    raise Exception("huh?")
+    # TODO fix up the error handling thing
+    raise Exception(f"{ti.peek()}")
 
 
 def Parse(text):
