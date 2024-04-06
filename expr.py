@@ -66,7 +66,6 @@ class Unary(Expr):
         if operator == '-' and
         if value.type == number then return - number
         """
-        print(self)
         if self.operator.type not in {TokenType.MINUS, TokenType.BANG}:
             raise Exception(f"invalid unary: {self.operator} {self.value}")
 
@@ -75,7 +74,6 @@ class Unary(Expr):
             if not isinstance(value, float):
                 raise Exception(f"not able to negate number {self} == {value}")
             else:
-                print("returning val", 0 - value)
                 return 0 - value
 
         if self.operator.type == TokenType.BANG:
