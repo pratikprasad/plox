@@ -22,3 +22,6 @@ class TestExpr(unittest.TestCase):
     def testUnary(self):
         self.assertEqual(Eval("-2"), -2)
         self.assertEqual(Eval("--2"), 2)
+
+        self.assertEqual(Eval("!true"), False)
+        self.assertEqual(Eval("!!true"), True)
