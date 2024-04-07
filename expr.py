@@ -3,7 +3,6 @@ from typing import Any
 from dataclasses import dataclass
 
 
-@dataclass
 class Expr:
     """"""
 
@@ -11,7 +10,7 @@ class Expr:
         raise Exception("not implemented")
 
 
-@dataclass
+@dataclass(frozen=True)
 class Literal(Expr):
     value: Any
 
@@ -22,38 +21,7 @@ class Literal(Expr):
         return self.value
 
 
-@dataclass
-class Grouping(Expr):
-    expr: Expr
-
-    def __repr__(self):
-        return f"(group {repr(self.expr)})"
-
-    def evaluate(self):
-        return self.expr.evaluate()
-
-
-@dataclass
-class Ternary(Expr):
-    test: Expr
-    left: Expr
-    right: Expr
-
-    def __repr__(self):
-        return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
-
-
-@dataclass
-class Binary(Expr):
-    left: Expr
-    operator: Token
-    right: Expr
-
-    def __repr__(self):
-        return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
-
-
-@dataclass
+@dataclass(frozen=True)
 class Unary(Expr):
     operator: Token  # ! or -
     value: Expr
@@ -80,3 +48,34 @@ class Unary(Expr):
             if not isinstance(value, bool):
                 raise Exception(f"not able to negate non-boolean {self} == {value}")
             return not value
+
+
+@dataclass(frozen=True)
+class Grouping(Expr):
+    expr: Expr
+
+    def __repr__(self):
+        return f"(group {repr(self.expr)})"
+
+    def evaluate(self):
+        return self.expr.evaluate()
+
+
+@dataclass(frozen=True)
+class Ternary(Expr):
+    test: Expr
+    left: Expr
+    right: Expr
+
+    def __repr__(self):
+        return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
+
+
+@dataclass(frozen=True)
+class Binary(Expr):
+    left: Expr
+    operator: Token
+    right: Expr
+
+    def __repr__(self):
+        return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
