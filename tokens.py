@@ -65,7 +65,7 @@ SINGLE_CHAR_LEXEMES = {
         TokenType.SEMICOLON,
         TokenType.STAR,
         TokenType.QUESTION,
-        TokenType.COLON
+        TokenType.COLON,
     ]
 }
 
