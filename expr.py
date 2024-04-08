@@ -1,6 +1,7 @@
 from tokens import Token, TokenType
 from typing import Any
 from dataclasses import dataclass
+import operator
 
 
 class Expr:
@@ -71,6 +72,14 @@ class Ternary(Expr):
         return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
 
 
+BINARY_OPERATIONS = {
+    TokenType.PLUS: operator.add,
+    TokenType.STAR: operator.mul,
+    TokenType.MOD: operator.mod,
+    TokenType.SLASH: operator.truediv,
+}
+
+
 @dataclass(frozen=True)
 class Binary(Expr):
     left: Expr
@@ -81,12 +90,10 @@ class Binary(Expr):
         return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
 
     def evaluate(self):
-        if self.operator.type == TokenType.PLUS:
-            return self.left.evaluate() + self.right.evaluate()
+        if self.operator.type not in BINARY_OPERATIONS:
+            raise Exception("not implemented")
 
-        if self.operator.type == TokenType.STAR:
-            return self.left.evaluate() * self.right.evaluate()
-
-        if self.operator.type == TokenType.MOD:
-            return self.left.evaluate() % self.right.evaluate()
-        raise Exception("not implemented")
+        left = self.left.evaluate()
+        right = self.right.evaluate()
+        opr = BINARY_OPERATIONS[self.operator.type]
+        return opr(left, right)

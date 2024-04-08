@@ -33,6 +33,8 @@ class TestExpr(unittest.TestCase):
         self.assertEqual(Eval("1+2*3"), 7)
         self.assertEqual(Eval("1+2*3*4*5"), 121)
 
-    def testModulo(self):
         self.assertEqual(Eval("10 % 3"), 1)
         self.assertEqual(Eval("10 % 3 * 2 + 1"), 3)
+
+        self.assertEqual(Eval("10 / 3"), (10 / 3))
+        self.assertEqual(Eval("15 / 3 * 8 "), 40)
