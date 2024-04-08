@@ -50,6 +50,8 @@ class Unary(Expr):
                 raise Exception(f"not able to negate non-boolean {self} == {value}")
             return not value
 
+        raise Exception("not implemented")
+
 
 @dataclass(frozen=True)
 class Grouping(Expr):
@@ -77,6 +79,12 @@ BINARY_OPERATIONS = {
     TokenType.STAR: operator.mul,
     TokenType.MOD: operator.mod,
     TokenType.SLASH: operator.truediv,
+    TokenType.BANG_EQUAL: operator.ne,
+    TokenType.EQUAL_EQUAL: operator.eq,
+    TokenType.LESS: operator.lt,
+    TokenType.LESS_EQUAL: operator.le,
+    TokenType.GREATER: operator.gt,
+    TokenType.GREATER_EQUAL: operator.ge,
 }
 
 

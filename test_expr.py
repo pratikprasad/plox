@@ -38,3 +38,29 @@ class TestExpr(unittest.TestCase):
 
         self.assertEqual(Eval("10 / 3"), (10 / 3))
         self.assertEqual(Eval("15 / 3 * 8 "), 40)
+
+    def testBinaryBool(self):
+        true_strings = [
+            "15%4==3",
+            "10%3!=3",
+            "3==3",
+            '11*3!="potato"',
+            '"potato" == "potato"',
+            "11*3!=3",
+            "5 > 3",
+            "5 >= 3",
+        ]
+        for s in true_strings:
+            self.assertTrue(Eval(s))
+
+        false_strings = [
+            "3!=3",
+            "15%4!=3",
+            "10%3==3",
+            "11*3==3",
+            "4/3==3/4",
+            "5 < 3",
+            "5 <= 3",
+        ]
+        for s in false_strings:
+            self.assertFalse(Eval(s))
