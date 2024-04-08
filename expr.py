@@ -79,3 +79,14 @@ class Binary(Expr):
 
     def __repr__(self):
         return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
+
+    def evaluate(self):
+        if self.operator.type == TokenType.PLUS:
+            return self.left.evaluate() + self.right.evaluate()
+
+        if self.operator.type == TokenType.STAR:
+            return self.left.evaluate() * self.right.evaluate()
+
+        if self.operator.type == TokenType.MOD:
+            return self.left.evaluate() % self.right.evaluate()
+        raise Exception("not implemented")

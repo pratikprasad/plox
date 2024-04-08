@@ -17,6 +17,7 @@ class TokenType(Enum):
     STAR = "*"
     QUESTION = "?"
     COLON = ":"
+    MOD = "%"
 
     BANG = "!"
     BANG_EQUAL = "!="
@@ -66,6 +67,7 @@ SINGLE_CHAR_LEXEMES = {
         TokenType.STAR,
         TokenType.QUESTION,
         TokenType.COLON,
+        TokenType.MOD,
     ]
 }
 

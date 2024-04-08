@@ -103,6 +103,18 @@ Version 7
     factor -> unary ( ("\" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+    
+
+Version 8
+
+    expression -> ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 """
 
 
@@ -156,7 +168,7 @@ def term(ti):
 
 def factor(ti):
     out = unary(ti)
-    while ti.match(TokenType.STAR, TokenType.SLASH):
+    while ti.match(TokenType.STAR, TokenType.SLASH, TokenType.MOD):
         out = Binary(out, ti.previous(), unary(ti))
 
     return out

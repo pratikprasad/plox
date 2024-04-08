@@ -25,3 +25,14 @@ class TestExpr(unittest.TestCase):
 
         self.assertEqual(Eval("!true"), False)
         self.assertEqual(Eval("!!true"), True)
+
+    def testBinary(self):
+        self.assertEqual(Eval("1+1"), 2)
+        self.assertEqual(Eval("1+1+(2+2)+(3)"), 9)
+
+        self.assertEqual(Eval("1+2*3"), 7)
+        self.assertEqual(Eval("1+2*3*4*5"), 121)
+
+    def testModulo(self):
+        self.assertEqual(Eval("10 % 3"), 1)
+        self.assertEqual(Eval("10 % 3 * 2 + 1"), 3)
