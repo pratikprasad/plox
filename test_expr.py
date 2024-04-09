@@ -86,3 +86,10 @@ class TestExpr(unittest.TestCase):
 
         self.assertEqual(Eval("5 == 3 ? 32 : 10"), 10)
         self.assertEqual(Eval("5 != 3 ? 32 : 10"), 32)
+
+    def testComma(self):
+        self.assertEqual(Eval("(true, 3 == 4 - 2, 5)"), 5)
+        self.assertEqual(Eval("(5*5)"), 25)
+        self.assertEqual(Eval("(3*1/54%4, false, 5*5)"), 25)
+        with self.assertRaises(RuntimeException) as _:
+            Eval('(3*1/54%4*"sdf", false, 5*5)')

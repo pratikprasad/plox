@@ -150,6 +150,10 @@ class Binary(Expr, _Binary):
         return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
 
     def evaluate(self):
+        if self.operator.type == TokenType.COMMA:
+            self.left.evaluate()
+            return self.right.evaluate()
+
         if self.operator.type not in BINARY_OPERATIONS:
             raise RuntimeException(f"Binary operation not implemented: {self.operator}")
 
