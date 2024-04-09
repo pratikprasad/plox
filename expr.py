@@ -1,29 +1,11 @@
-from tokens import Token, TokenType
-from typing import Any
-from dataclasses import dataclass
+from typing import Any, NamedTuple
 import operator
+
+from tokens import Token, TokenType
 
 
 class RuntimeException(Exception):
     pass
-
-
-class Expr:
-    """"""
-
-    def evaluate(self) -> Any:
-        raise RuntimeException("Expression evaluation not implemented")
-
-
-@dataclass(frozen=True)
-class Literal(Expr):
-    value: Any
-
-    def __repr__(self):
-        return repr(self.value)
-
-    def evaluate(self):
-        return self.value
 
 
 def isTruthy(value):
@@ -34,10 +16,32 @@ def isTruthy(value):
     return True
 
 
-@dataclass(frozen=True)
-class Unary(Expr):
+class Expr:
+    """"""
+
+    def evaluate(self) -> Any:
+        raise RuntimeException("Expression evaluation not implemented")
+
+
+class _Literal(NamedTuple):
+    value: Any
+
+
+class Literal(Expr, _Literal):
+
+    def __repr__(self):
+        return repr(self.value)
+
+    def evaluate(self):
+        return self.value
+
+
+class _Unary(NamedTuple):
     operator: Token  # ! or -
     value: Expr
+
+
+class Unary(Expr, _Unary):
 
     def __repr__(self):
         return f"({self.operator.lexeme} {repr(self.value)})"
@@ -63,9 +67,11 @@ class Unary(Expr):
         raise RuntimeException("Unary expression not implemented")
 
 
-@dataclass(frozen=True)
-class Grouping(Expr):
+class _Grouping(NamedTuple):
     expr: Expr
+
+
+class Grouping(Expr, _Grouping):
 
     def __repr__(self):
         return f"(group {repr(self.expr)})"
@@ -74,11 +80,13 @@ class Grouping(Expr):
         return self.expr.evaluate()
 
 
-@dataclass(frozen=True)
-class Ternary(Expr):
+class _Ternary(NamedTuple):
     test: Expr
     left: Expr
     right: Expr
+
+
+class Ternary(Expr, _Ternary):
 
     def __repr__(self):
         return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
@@ -112,11 +120,13 @@ NUMBER_BINARY_OPERATIONS = {
 }
 
 
-@dataclass(frozen=True)
-class Binary(Expr):
+class _Binary(NamedTuple):
     left: Expr
     operator: Token
     right: Expr
+
+
+class Binary(Expr, _Binary):
 
     def __repr__(self):
         return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
