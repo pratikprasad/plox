@@ -48,6 +48,8 @@ class TestExpr(unittest.TestCase):
             Eval('2 * "potato" * 2')
         with self.assertRaises(RuntimeException) as err:
             Eval('"tomato" > 3')
+        with self.assertRaises(RuntimeException) as err:
+            Eval("4/0")
 
         self.assertEqual(Eval('"potato " + "tomato"'), "potato tomato")
         self.assertEqual(Eval('"potato " +3'), "potato 3.0")

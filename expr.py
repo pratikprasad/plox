@@ -107,12 +107,18 @@ def plus(left, right):
     raise RuntimeException(f"Unknown behavior for `+` with values: {left} and {right}")
 
 
+def div(left, right):
+    if right == 0:
+        raise RuntimeException("divide by zero is not allowed")
+    return operator.truediv(left, right)
+
+
 BINARY_OPERATIONS = {
     TokenType.PLUS: plus,
     TokenType.MINUS: operator.sub,
     TokenType.STAR: operator.mul,
     TokenType.MOD: operator.mod,
-    TokenType.SLASH: operator.truediv,
+    TokenType.SLASH: div,
     TokenType.BANG_EQUAL: operator.ne,
     TokenType.EQUAL_EQUAL: operator.eq,
     TokenType.LESS: operator.lt,
