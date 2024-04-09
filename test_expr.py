@@ -44,6 +44,9 @@ class TestExpr(unittest.TestCase):
         self.assertEqual(Eval("10 / 3"), (10 / 3))
         self.assertEqual(Eval("15 / 3 * 8 "), 40)
 
+        with self.assertRaises(RuntimeException) as err:
+            Eval('2 * "potato" * 2')
+
     def testBinaryBool(self):
         true_strings = [
             "15%4==3",

@@ -92,6 +92,7 @@ class Ternary(Expr):
 
 BINARY_OPERATIONS = {
     TokenType.PLUS: operator.add,
+    TokenType.MINUS: operator.sub,
     TokenType.STAR: operator.mul,
     TokenType.MOD: operator.mod,
     TokenType.SLASH: operator.truediv,
@@ -101,6 +102,13 @@ BINARY_OPERATIONS = {
     TokenType.LESS_EQUAL: operator.le,
     TokenType.GREATER: operator.gt,
     TokenType.GREATER_EQUAL: operator.ge,
+}
+NUMBER_BINARY_OPERATIONS = {
+    TokenType.PLUS,
+    TokenType.MINUS,
+    TokenType.STAR,
+    TokenType.MOD,
+    TokenType.SLASH,
 }
 
 
@@ -119,5 +127,13 @@ class Binary(Expr):
 
         left = self.left.evaluate()
         right = self.right.evaluate()
+
+        if self.operator.type in NUMBER_BINARY_OPERATIONS:
+            if type(left) is not float:
+                raise RuntimeException(f"Non-float in number operation: {left}")
+
+            if type(right) is not float:
+                raise RuntimeException(f"Non-float in number operation: {right}")
+
         opr = BINARY_OPERATIONS[self.operator.type]
         return opr(left, right)
