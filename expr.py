@@ -98,8 +98,17 @@ class Ternary(Expr, _Ternary):
             return self.right.evaluate()
 
 
+def plus(left, right):
+    if type(left) == type(right) == float:
+        return operator.add(left, right)
+    if type(left) == str and type(right) in [float, str]:
+        return f"{left}{right}"
+
+    raise RuntimeException(f"Unknown behavior for `+` with values: {left} and {right}")
+
+
 BINARY_OPERATIONS = {
-    TokenType.PLUS: operator.add,
+    TokenType.PLUS: plus,
     TokenType.MINUS: operator.sub,
     TokenType.STAR: operator.mul,
     TokenType.MOD: operator.mod,
@@ -112,11 +121,14 @@ BINARY_OPERATIONS = {
     TokenType.GREATER_EQUAL: operator.ge,
 }
 NUMBER_BINARY_OPERATIONS = {
-    TokenType.PLUS,
     TokenType.MINUS,
     TokenType.STAR,
     TokenType.MOD,
     TokenType.SLASH,
+    TokenType.LESS,
+    TokenType.LESS_EQUAL,
+    TokenType.GREATER,
+    TokenType.GREATER_EQUAL,
 }
 
 

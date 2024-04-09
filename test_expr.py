@@ -46,6 +46,11 @@ class TestExpr(unittest.TestCase):
 
         with self.assertRaises(RuntimeException) as err:
             Eval('2 * "potato" * 2')
+        with self.assertRaises(RuntimeException) as err:
+            Eval('"tomato" > 3')
+
+        self.assertEqual(Eval('"potato " + "tomato"'), "potato tomato")
+        self.assertEqual(Eval('"potato " +3'), "potato 3.0")
 
     def testBinaryBool(self):
         true_strings = [
