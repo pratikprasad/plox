@@ -4,11 +4,15 @@ from dataclasses import dataclass
 import operator
 
 
+class RuntimeException(Exception):
+    pass
+
+
 class Expr:
     """"""
 
     def evaluate(self) -> Any:
-        raise Exception("not implemented")
+        raise RuntimeException("Expression evaluation not implemented")
 
 
 @dataclass(frozen=True)
@@ -44,19 +48,19 @@ class Unary(Expr):
         if value.type == number then return - number
         """
         if self.operator.type not in {TokenType.MINUS, TokenType.BANG}:
-            raise Exception(f"invalid unary: {self.operator} {self.value}")
+            raise RuntimeException(f"invalid unary: {self.operator} {self.value}")
 
         value = self.value.evaluate()
         if self.operator.type == TokenType.MINUS:
             if not isinstance(value, float):
-                raise Exception(f"not able to negate number {self} == {value}")
+                raise RuntimeException(f"not able to negate number {self} == {value}")
             else:
                 return 0 - value
 
         if self.operator.type == TokenType.BANG:
             return not isTruthy(value)
 
-        raise Exception("not implemented")
+        raise RuntimeException("Unary expression not implemented")
 
 
 @dataclass(frozen=True)
@@ -111,7 +115,7 @@ class Binary(Expr):
 
     def evaluate(self):
         if self.operator.type not in BINARY_OPERATIONS:
-            raise Exception("not implemented")
+            raise RuntimeException(f"Binary operation not implemented: {self.operator}")
 
         left = self.left.evaluate()
         right = self.right.evaluate()
