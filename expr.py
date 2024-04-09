@@ -7,7 +7,7 @@ import operator
 class Expr:
     """"""
 
-    def evaluate(self):
+    def evaluate(self) -> Any:
         raise Exception("not implemented")
 
 
@@ -20,6 +20,14 @@ class Literal(Expr):
 
     def evaluate(self):
         return self.value
+
+
+def isTruthy(value):
+    if value is None:
+        return False
+    if type(value) == bool:
+        return value
+    return True
 
 
 @dataclass(frozen=True)
@@ -46,9 +54,7 @@ class Unary(Expr):
                 return 0 - value
 
         if self.operator.type == TokenType.BANG:
-            if not isinstance(value, bool):
-                raise Exception(f"not able to negate non-boolean {self} == {value}")
-            return not value
+            return not isTruthy(value)
 
         raise Exception("not implemented")
 

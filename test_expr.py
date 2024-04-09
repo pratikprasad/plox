@@ -26,6 +26,11 @@ class TestExpr(unittest.TestCase):
         self.assertEqual(Eval("!true"), False)
         self.assertEqual(Eval("!!true"), True)
 
+    def testBooleanStuff(self):
+        self.assertTrue(Eval('"potato"'))  # strings are truthy
+        self.assertTrue(Eval("!nil"))  # nil is false, negating it is true
+        self.assertTrue(Eval("!!true"))  # double negate true
+
     def testBinary(self):
         self.assertEqual(Eval("1+1"), 2)
         self.assertEqual(Eval("1+1+(2+2)+(3)"), 9)
@@ -47,7 +52,7 @@ class TestExpr(unittest.TestCase):
             '11*3!="potato"',
             '"potato" == "potato"',
             "11*3!=3",
-            "5 > 3",
+            "6 > 3",
             "5 >= 3",
         ]
         for s in true_strings:
