@@ -79,6 +79,12 @@ class Ternary(Expr):
     def __repr__(self):
         return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
 
+    def evaluate(self):
+        if isTruthy(self.test.evaluate()):
+            return self.left.evaluate()
+        else:
+            return self.right.evaluate()
+
 
 BINARY_OPERATIONS = {
     TokenType.PLUS: operator.add,

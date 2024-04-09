@@ -69,3 +69,10 @@ class TestExpr(unittest.TestCase):
         ]
         for s in false_strings:
             self.assertFalse(Eval(s))
+
+    def testTernary(self):
+        self.assertEqual(Eval("5 < 3 ? 32 : 10"), 10)
+        self.assertEqual(Eval("5 > 3 ? 32 : 10"), 32)
+
+        self.assertEqual(Eval("5 == 3 ? 32 : 10"), 10)
+        self.assertEqual(Eval("5 != 3 ? 32 : 10"), 32)
