@@ -1,7 +1,8 @@
 from typing import List
 from dataclasses import dataclass
 
-from expr import Unary, Binary, Literal, Grouping, Ternary
+from expr import Unary, Binary, Literal, Grouping, Ternary, Expr
+from stmt import Print, Expression, Stmt
 from tokens import *
 from scanner import Scanner
 
@@ -115,7 +116,40 @@ Version 8
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 9
+
+    program -> statement* EOF
+    statement -> exprStmt | printStmt
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 """
+
+
+def statement(ti):
+    if ti.match(TokenType.PRINT):
+        return printStmt(ti)
+    return exprStmt(ti)
+
+
+def exprStmt(ti: TokenIter):
+    value = expression(ti)
+    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    return Expression(value)
+
+
+def printStmt(ti: TokenIter):
+    value = expression(ti)
+    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    return Print(value)
 
 
 def expression(ti: TokenIter):
@@ -201,8 +235,11 @@ def primary(ti: TokenIter):
     raise Exception(f"{ti.peek()}")
 
 
-def Parse(text):
+def Parse(text) -> List[Stmt]:
     sc = Scanner(text)
     tokens = sc.scanTokens()
     ti = TokenIter(tokens)
-    return expression(ti)
+    out = []
+    while not ti.isAtEnd():
+        out.append(statement(ti))
+    return out
