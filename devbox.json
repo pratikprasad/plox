@@ -3,7 +3,8 @@
   "packages": [
     "python3@latest",
     "lazygit@latest",
-    "neovim@latest"
+    "neovim@latest",
+    "nodejs@latest"
   ],
   "shell": {
     "init_hook": [
