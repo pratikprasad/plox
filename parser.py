@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 from dataclasses import dataclass
 
-from expr import Unary, Binary, Literal, Grouping, Ternary, Expr
-from stmt import Print, Expression, Stmt
+from expr import Unary, Binary, Literal, Grouping, Ternary, Variable
+from stmt import Print, Expression, Stmt, Var
 from tokens import *
 from scanner import Scanner
 
@@ -106,7 +106,7 @@ Version 7
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
     
 
-Version 8
+Version 8 -- add ternary
 
     expression -> ternary
     ternary -> comma | comma "?" comma : comma 
@@ -117,7 +117,7 @@ Version 8
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 
-Version 9
+Version 9 -- Add expression statements and prints statements
 
     program -> statement* EOF
     statement -> exprStmt | printStmt
@@ -131,7 +131,43 @@ Version 9
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
+
+Version 10 -- Add variable declarations
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
 """
+
+
+def declaration(ti) -> Optional[Stmt]:
+    try:
+        if ti.match(TokenType.VAR):
+            return varDecl(ti)
+    except Exception as e:
+        print(e)
+        ti.synchronize()
+        return None
+
+
+def varDecl(ti) -> Stmt:
+    name = ti.consume(TokenType.IDENTIFIER, "Expect variable name")
+    initializer = None
+    if ti.match(TokenType.EQUAL):
+        initializer = expression(ti)
+    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    return Var(name, initializer)
 
 
 def statement(ti):
@@ -230,6 +266,9 @@ def primary(ti: TokenIter):
         expr = expression(ti)
         ti.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
         return Grouping(expr)
+
+    if ti.match(TokenType.IDENTIFIER):
+        return Variable(ti.previous())
 
     # TODO fix up the error handling thing
     raise Exception(f"{ti.peek()}")

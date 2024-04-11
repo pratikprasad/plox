@@ -1,5 +1,7 @@
+from operator import attrgetter
 from expr import Expr
-from typing import NamedTuple
+from tokens import Token
+from typing import NamedTuple, Optional
 
 
 class Stmt:
@@ -14,6 +16,8 @@ class _Expression(NamedTuple):
 
 
 class Expression(_Expression, Stmt):
+    attrgetter("expression")
+
     def __repr__(self):
         return f"(expression {self.expression})"
 
@@ -31,3 +35,13 @@ class Print(_Print, Stmt):
 
     def execute(self) -> None:
         print(str(self.expression.evaluate()))
+
+
+class _Var(NamedTuple):
+    name: Token
+    value: Optional[Expr]
+
+
+class Var(_Var, Stmt):
+    def __repr__(self):
+        return f"(var {self.name} {self.value})"

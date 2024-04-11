@@ -169,3 +169,12 @@ class Binary(Expr, _Binary):
 
         opr = BINARY_OPERATIONS[self.operator.type]
         return opr(left, right)
+
+
+class _Variable(NamedTuple):
+    name: Token
+
+
+class Variable(_Variable, Expr):
+    def __repr__(self):
+        return f"(variable {self.name})"
