@@ -124,3 +124,8 @@ class TestTernary(unittest.TestCase):
         self.assertEqual(
             repr(parse('false ? 32 * 4 : "error"')), "(? False (* 32.0 4.0) 'error')"
         )
+
+
+class TestDeclaration(unittest.TestCase):
+    def testMisc(self):
+        self.assertEqual(repr(parser.Parse('var name = "bob";')), "[(var name 'bob')]")

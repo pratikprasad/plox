@@ -44,4 +44,4 @@ class _Var(NamedTuple):
 
 class Var(_Var, Stmt):
     def __repr__(self):
-        return f"(var {self.name} {self.value})"
+        return f"(var {self.name.lexeme} {self.value})"

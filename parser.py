@@ -43,6 +43,24 @@ class TokenIter:
             return self.advance()
         raise Exception(f"Peek: \n {self.peek()} \n\nError: \n {message}")
 
+    def synchronize(self):
+        self.advance()
+        while not self.isAtEnd():
+            if self.previous().type == TokenType.SEMICOLON:
+                return
+            if self.peek().type in {
+                TokenType.CLASS,
+                TokenType.FUN,
+                TokenType.VAR,
+                TokenType.FOR,
+                TokenType.IF,
+                TokenType.WHILE,
+                TokenType.PRINT,
+                TokenType.RETURN,
+            }:
+                return
+            self.advance()
+
 
 """
 Probably the reason he wrote it as one pass was so that you don't have to keep adding and changing the value of `expr`.
@@ -155,6 +173,7 @@ def declaration(ti) -> Optional[Stmt]:
     try:
         if ti.match(TokenType.VAR):
             return varDecl(ti)
+        return statement(ti)
     except Exception as e:
         print(e)
         ti.synchronize()
@@ -280,5 +299,5 @@ def Parse(text) -> List[Stmt]:
     ti = TokenIter(tokens)
     out = []
     while not ti.isAtEnd():
-        out.append(statement(ti))
+        out.append(declaration(ti))
     return out
