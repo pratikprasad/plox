@@ -30,4 +30,4 @@ class Print(_Print, Stmt):
         return f"(print {self.expression})"
 
     def execute(self) -> None:
-        print(self.expression.evaluate())
+        print(str(self.expression.evaluate()))
