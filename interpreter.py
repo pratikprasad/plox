@@ -132,10 +132,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if val.value:
             value = val.value.visit(self)
         self.env[val.name.lexeme] = value
-        print(self.env)
 
     def visitAssign(self, val):
-        raise RuntimeException("not implemented")
+        if val.name.lexeme not in self.env:
+            raise RuntimeException(f"variable not found: {val.name}")
+        value = None
+        if val.value:
+            value = val.value.visit(self)
+        self.env[val.name.lexeme] = value
 
 
 if __name__ == "__main__":
