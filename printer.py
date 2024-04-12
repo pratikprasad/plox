@@ -46,7 +46,10 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""
-    expr = Parse(f"{expression};")[0]
+    text = expression
+    if expression[-1] != ";":
+        text += ";"
+    expr = Parse(text)[0]
     return expr.visit(ExprPrinter())
 
 
