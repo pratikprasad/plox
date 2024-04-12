@@ -4,6 +4,8 @@ import parser
 from expr import *
 from tokens import *
 
+from printer import PolishNotation
+
 
 def parse(text):
     """
@@ -81,11 +83,11 @@ class TestFactor(unittest.TestCase):
         )
 
     def testDivAndNegative(self):
-        self.assertEqual(repr(parse("-34/-23")), "(/ (- 34.0) (- 23.0))")
+        self.assertEqual(PolishNotation("-34/-23"), "(/ (- 34.0) (- 23.0))")
 
     def testMultiple(self):
         self.assertEqual(
-            repr(parse("--23*23/---3")), "(/ (* (- (- 23.0)) 23.0) (- (- (- 3.0))))"
+            PolishNotation("--23*23/---3"), "(/ (* (- (- 23.0)) 23.0) (- (- (- 3.0))))"
         )
 
 
@@ -93,28 +95,30 @@ class TestTerm(unittest.TestCase):
 
     def testPlus(self):
         self.assertEqual(
-            repr(parse("0 + 1 + 2 + 3  + 4")), "(+ (+ (+ (+ 0.0 1.0) 2.0) 3.0) 4.0)"
+            PolishNotation("0 + 1 + 2 + 3  + 4"), "(+ (+ (+ (+ 0.0 1.0) 2.0) 3.0) 4.0)"
         )
 
     def testPlusMinusTimes(self):
         self.assertEqual(
-            repr(parse("3 * 4 - 3 * -3")), "(- (* 3.0 4.0) (* 3.0 (- 3.0)))"
+            PolishNotation("3 * 4 - 3 * -3"), "(- (* 3.0 4.0) (* 3.0 (- 3.0)))"
         )
 
 
 class TestBooleanOperations(unittest.TestCase):
     def testMisc(self):
-        self.assertEqual(repr(parse("3 * 4 == 4 * 3")), "(== (* 3.0 4.0) (* 4.0 3.0))")
         self.assertEqual(
-            repr(parse("3 * -4 != -4 * 3")), "(!= (* 3.0 (- 4.0)) (* (- 4.0) 3.0))"
+            PolishNotation("3 * 4 == 4 * 3"), "(== (* 3.0 4.0) (* 4.0 3.0))"
+        )
+        self.assertEqual(
+            PolishNotation("3 * -4 != -4 * 3"), "(!= (* 3.0 (- 4.0)) (* (- 4.0) 3.0))"
         )
 
 
 class TestCommaOperations(unittest.TestCase):
     def testMisc(self):
-        self.assertEqual(repr(parse("(3, 4, 5)")), "(group (, (, 3.0 4.0) 5.0))")
+        self.assertEqual(PolishNotation("(3, 4, 5)"), "(group (, (, 3.0 4.0) 5.0))")
         self.assertEqual(
-            repr(parse("(true, 3 == 4 - 2, 5)")),
+            PolishNotation("(true, 3 == 4 - 2, 5)"),
             "(group (, (, True (== 3.0 (- 4.0 2.0))) 5.0))",
         )
 
@@ -122,10 +126,10 @@ class TestCommaOperations(unittest.TestCase):
 class TestTernary(unittest.TestCase):
     def testMisc(self):
         self.assertEqual(
-            repr(parse('false ? 32 * 4 : "error"')), "(? False (* 32.0 4.0) 'error')"
+            PolishNotation('false ? 32 * 4 : "error"'), "(? False (* 32.0 4.0) 'error')"
         )
 
 
 class TestDeclaration(unittest.TestCase):
     def testMisc(self):
-        self.assertEqual(repr(parser.Parse('var name = "bob";')), "[(var name 'bob')]")
+        self.assertEqual(PolishNotation('var name = "bob";'), "(var name 'bob')")

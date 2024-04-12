@@ -293,11 +293,12 @@ def primary(ti: TokenIter):
     raise Exception(f"{ti.peek()}")
 
 
-def Parse(text) -> List[Stmt]:
+def Parse(text):
     sc = Scanner(text)
     tokens = sc.scanTokens()
     ti = TokenIter(tokens)
     out = []
     while not ti.isAtEnd():
-        out.append(declaration(ti))
+        decl = declaration(ti)
+        out.append(decl)
     return out

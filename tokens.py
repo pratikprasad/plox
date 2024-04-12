@@ -103,5 +103,5 @@ class Token(NamedTuple):
     line: int
 
     @classmethod
-    def fromTokenType(cls, t_type: TokenType, line: int):
+    def fromTokenType(cls, t_type: TokenType, line: int = 1):
         return Token(t_type, t_type.value, None, line)

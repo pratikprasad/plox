@@ -2,10 +2,8 @@ from typing import Any, NamedTuple
 import operator
 
 from tokens import Token, TokenType
-
-
-class RuntimeException(Exception):
-    pass
+from abc import ABC, abstractmethod
+from util import RuntimeException
 
 
 def isTruthy(value):
@@ -16,24 +14,16 @@ def isTruthy(value):
     return True
 
 
-class Expr:
+class Expr(ABC):
     """"""
 
-    def evaluate(self) -> Any:
-        raise RuntimeException("Expression evaluation not implemented")
+    @abstractmethod
+    def visit(self, vis):
+        pass
 
 
 class _Literal(NamedTuple):
     value: Any
-
-
-class Literal(Expr, _Literal):
-
-    def __repr__(self):
-        return repr(self.value)
-
-    def evaluate(self):
-        return self.value
 
 
 class _Unary(NamedTuple):
@@ -41,61 +31,14 @@ class _Unary(NamedTuple):
     value: Expr
 
 
-class Unary(Expr, _Unary):
-
-    def __repr__(self):
-        return f"({self.operator.lexeme} {repr(self.value)})"
-
-    def evaluate(self):
-        """
-        if operator == '-' and
-        if value.type == number then return - number
-        """
-        if self.operator.type not in {TokenType.MINUS, TokenType.BANG}:
-            raise RuntimeException(f"invalid unary: {self.operator} {self.value}")
-
-        value = self.value.evaluate()
-        if self.operator.type == TokenType.MINUS:
-            if not isinstance(value, float):
-                raise RuntimeException(f"not able to negate number {self} == {value}")
-            else:
-                return 0 - value
-
-        if self.operator.type == TokenType.BANG:
-            return not isTruthy(value)
-
-        raise RuntimeException("Unary expression not implemented")
-
-
 class _Grouping(NamedTuple):
     expr: Expr
-
-
-class Grouping(Expr, _Grouping):
-
-    def __repr__(self):
-        return f"(group {repr(self.expr)})"
-
-    def evaluate(self):
-        return self.expr.evaluate()
 
 
 class _Ternary(NamedTuple):
     test: Expr
     left: Expr
     right: Expr
-
-
-class Ternary(Expr, _Ternary):
-
-    def __repr__(self):
-        return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
-
-    def evaluate(self):
-        if isTruthy(self.test.evaluate()):
-            return self.left.evaluate()
-        else:
-            return self.right.evaluate()
 
 
 def plus(left, right):
@@ -111,6 +54,48 @@ def div(left, right):
     if right == 0:
         raise RuntimeException("divide by zero is not allowed")
     return operator.truediv(left, right)
+
+
+class _Binary(NamedTuple):
+    left: Expr
+    operator: Token
+    right: Expr
+
+
+class _Variable(NamedTuple):
+    name: Token
+
+
+class ExprVisitor(ABC):
+
+    @abstractmethod
+    def visitLiteral(self, val: _Literal) -> Any:
+        pass
+
+    @abstractmethod
+    def visitGrouping(self, val: _Grouping) -> Any:
+        pass
+
+    @abstractmethod
+    def visitUnary(self, val: _Unary) -> Any:
+        pass
+
+    @abstractmethod
+    def visitBinary(self, val: _Binary) -> Any:
+        pass
+
+    @abstractmethod
+    def visitTernary(self, val: _Ternary) -> Any:
+        pass
+
+    @abstractmethod
+    def visitVariable(self, val: _Variable) -> Any:
+        pass
+
+
+class Variable(_Variable, Expr):
+    def visit(self, vis: ExprVisitor):
+        return vis.visitVariable(self)
 
 
 BINARY_OPERATIONS = {
@@ -138,16 +123,10 @@ NUMBER_BINARY_OPERATIONS = {
 }
 
 
-class _Binary(NamedTuple):
-    left: Expr
-    operator: Token
-    right: Expr
-
-
 class Binary(Expr, _Binary):
 
-    def __repr__(self):
-        return f"({self.operator.lexeme} {repr(self.left)} {repr(self.right)})"
+    def visit(self, vis: ExprVisitor):
+        return vis.visitBinary(self)
 
     def evaluate(self):
         if self.operator.type == TokenType.COMMA:
@@ -157,8 +136,8 @@ class Binary(Expr, _Binary):
         if self.operator.type not in BINARY_OPERATIONS:
             raise RuntimeException(f"Binary operation not implemented: {self.operator}")
 
-        left = self.left.evaluate()
-        right = self.right.evaluate()
+        left = self.left.visit()
+        right = self.right.visit()
 
         if self.operator.type in NUMBER_BINARY_OPERATIONS:
             if type(left) is not float:
@@ -171,10 +150,63 @@ class Binary(Expr, _Binary):
         return opr(left, right)
 
 
-class _Variable(NamedTuple):
-    name: Token
+class Literal(Expr, _Literal):
 
-
-class Variable(_Variable, Expr):
     def __repr__(self):
-        return f"(variable {self.name})"
+        return repr(self.value)
+
+    def visit(self, vis: ExprVisitor):
+        return vis.visitLiteral(self)
+
+
+class Ternary(Expr, _Ternary):
+    def visit(self, vis: ExprVisitor):
+        return vis.visitTernary(self)
+
+    def __repr__(self):
+        return f"(? {repr(self.test)} {repr(self.left)} {repr(self.right)})"
+
+    def evaluate(self):
+        if isTruthy(self.test.evaluate()):
+            return self.left.evaluate()
+        else:
+            return self.right.evaluate()
+
+
+class Grouping(Expr, _Grouping):
+    def visit(self, vis: ExprVisitor):
+        return vis.visitGrouping(self)
+
+    def __repr__(self):
+        return f"(group {repr(self.expr)})"
+
+    def evaluate(self):
+        return self.expr.evaluate()
+
+
+class Unary(Expr, _Unary):
+    def visit(self, vis: ExprVisitor):
+        return vis.visitUnary(self)
+
+    def __repr__(self):
+        return f"({self.operator.lexeme} {repr(self.value)})"
+
+    def evaluate(self):
+        """
+        if operator == '-' and
+        if value.type == number then return - number
+        """
+        if self.operator.type not in {TokenType.MINUS, TokenType.BANG}:
+            raise RuntimeException(f"invalid unary: {self.operator} {self.value}")
+
+        value = self.value.evaluate()
+        if self.operator.type == TokenType.MINUS:
+            if not isinstance(value, float):
+                raise RuntimeException(f"not able to negate number {self} == {value}")
+            else:
+                return 0 - value
+
+        if self.operator.type == TokenType.BANG:
+            return not isTruthy(value)
+
+        raise RuntimeException("Unary expression not implemented")
