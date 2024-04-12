@@ -41,6 +41,11 @@ class _Variable(NamedTuple):
     name: Token
 
 
+class _Assign(NamedTuple):
+    name: Token
+    value: Expr
+
+
 class ExprVisitor(ABC):
 
     @abstractmethod
@@ -67,6 +72,10 @@ class ExprVisitor(ABC):
     def visitVariable(self, val: _Variable) -> Any:
         pass
 
+    @abstractmethod
+    def visitAssign(self, val: _Assign) -> Any:
+        pass
+
 
 class Variable(_Variable, Expr):
     def visit(self, vis: ExprVisitor):
@@ -74,13 +83,11 @@ class Variable(_Variable, Expr):
 
 
 class Binary(Expr, _Binary):
-
     def visit(self, vis: ExprVisitor):
         return vis.visitBinary(self)
 
 
 class Literal(Expr, _Literal):
-
     def visit(self, vis: ExprVisitor):
         return vis.visitLiteral(self)
 
@@ -98,3 +105,8 @@ class Grouping(Expr, _Grouping):
 class Unary(Expr, _Unary):
     def visit(self, vis: ExprVisitor):
         return vis.visitUnary(self)
+
+
+class Assign(_Assign, Expr):
+    def visit(self, vis: ExprVisitor):
+        return vis.visitAssign(self)

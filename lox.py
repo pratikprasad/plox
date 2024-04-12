@@ -1,4 +1,5 @@
 import sys
+from interpreter import Interpreter
 from parser import Parse
 
 
@@ -7,9 +8,10 @@ def err(line, message):
 
 
 def run(content):
+    inpr = Interpreter()
     program = Parse(content)
     for line in program:
-        line.execute()
+        line.visit(inpr)
 
 
 def runFile(filename):
@@ -19,12 +21,15 @@ def runFile(filename):
 
 
 def runPrompt():
+    inpr = Interpreter()
+
     while True:
-        try:
-            line = input("> ")
-            run(line)
-        except Exception as e:
-            print(e)
+        # try:
+        line = input("> ")
+        expr = Parse(line)[0]
+        expr.visit(inpr)
+    # except Exception as e:
+    # print(e)
 
 
 args = sys.argv[1:]

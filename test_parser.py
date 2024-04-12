@@ -133,3 +133,9 @@ class TestTernary(unittest.TestCase):
 class TestDeclaration(unittest.TestCase):
     def testMisc(self):
         self.assertEqual(PolishNotation('var name = "bob";'), "(var name 'bob')")
+
+
+class TestAssignment(unittest.TestCase):
+    def testMisc(self):
+        self.assertEqual(PolishNotation("a= 3"), "(assign a 3.0)")
+        self.assertEqual(PolishNotation(" potato = 3"), "(assign potato 3.0)")

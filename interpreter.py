@@ -1,4 +1,5 @@
 import operator
+from typing import Dict
 
 from expr import ExprVisitor
 from stmt import StmtVisitor
@@ -57,6 +58,11 @@ NUMBER_BINARY_OPERATIONS = {
 class Interpreter(ExprVisitor, StmtVisitor):
     """"""
 
+    env: Dict
+
+    def __init__(self):
+        self.env = {}
+
     def visitLiteral(self, val):
         return val.value
 
@@ -84,7 +90,6 @@ class Interpreter(ExprVisitor, StmtVisitor):
         raise RuntimeException("Unary expression not implemented")
 
     def visitBinary(self, val):
-
         if val.operator.type == TokenType.COMMA:
             val.left.visit(self)
             return val.right.visit(self)
@@ -118,9 +123,18 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return val.expression.visit(self)
 
     def visitVariable(self, val):
-        raise RuntimeException("not implemented")
+        if val.name.lexeme not in self.env:
+            raise RuntimeException(f"variable not found: {val.name}")
+        return self.env[val.name.lexeme]
 
     def visitVar(self, val):
+        value = None
+        if val.value:
+            value = val.value.visit(self)
+        self.env[val.name.lexeme] = value
+        print(self.env)
+
+    def visitAssign(self, val):
         raise RuntimeException("not implemented")
 
 

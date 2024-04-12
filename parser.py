@@ -1,7 +1,7 @@
 from typing import List, Optional
 from dataclasses import dataclass
 
-from expr import Unary, Binary, Literal, Grouping, Ternary, Variable
+from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign
 from stmt import Print, Expression, Stmt, Var
 from tokens import *
 from scanner import Scanner
@@ -69,7 +69,6 @@ Version 1
 
     expression -> primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
-
 
 
 Version 2
@@ -166,6 +165,24 @@ Version 10 -- Add variable declarations
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+
+Version 11 -- add assignment 
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
 """
 
 
@@ -208,7 +225,22 @@ def printStmt(ti: TokenIter):
 
 
 def expression(ti: TokenIter):
-    return ternary(ti)
+    return assignment(ti)
+
+
+def assignment(ti):
+    """"""
+    expr = ternary(ti)
+    if ti.match(TokenType.EQUAL):
+        eql = ti.previous()
+        value = assignment(ti)
+
+        if type(expr) == Variable:
+            name = expr.name
+            return Assign(name, value)
+
+        raise Exception(f"invalid assignment target: {eql}")
+    return expr
 
 
 def ternary(ti: TokenIter):
