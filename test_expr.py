@@ -1,6 +1,8 @@
 from expr import *
+from interpreter import Interpreter
 from tokens import *
 from parser import *
+from util import RuntimeException
 
 import unittest
 
@@ -10,7 +12,8 @@ def eval_as_expression(text):
     tokens = sc.scanTokens()
     ti = TokenIter(tokens)
     expr = expression(ti)
-    return expr.evaluate()
+    inpr = Interpreter()
+    return expr.visit(inpr)
 
 
 class TestExpr(unittest.TestCase):

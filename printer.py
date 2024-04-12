@@ -7,7 +7,9 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
     """"""
 
     def visitLiteral(self, val):
-        return str(val)
+        if type(val.value) == str:
+            return f"'{val.value}'"
+        return val.value
 
     def visitGrouping(self, val):
         return f"(group {val.expr.visit(self)})"
@@ -33,7 +35,10 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
         return val.expression.visit(self)
 
     def visitVar(self, val):
-        return f"(var {val.name.lexeme} {val.value})"
+        value = None
+        if val.value:
+            value = val.value.visit(self)
+        return f"(var {val.name.lexeme} {value})"
 
 
 def PolishNotation(expression):
