@@ -1,6 +1,7 @@
 import operator
 from typing import Dict
 
+from environment import Environment
 from expr import ExprVisitor
 from stmt import StmtVisitor
 from tokens import TokenType
@@ -58,10 +59,8 @@ NUMBER_BINARY_OPERATIONS = {
 class Interpreter(ExprVisitor, StmtVisitor):
     """"""
 
-    env: Dict
-
     def __init__(self):
-        self.env = {}
+        self.env = Environment()
 
     def visitLiteral(self, val):
         return val.value
@@ -123,26 +122,31 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return val.expression.visit(self)
 
     def visitVariable(self, val):
-        if val.name.lexeme not in self.env:
-            raise RuntimeException(f"variable not found: {val.name}")
-        return self.env[val.name.lexeme]
+        return self.env.get(val.name.lexeme)
 
     def visitVar(self, val):
         value = None
         if val.value:
             value = val.value.visit(self)
-        self.env[val.name.lexeme] = value
+        self.env.define(val.name.lexeme, value)
 
     def visitAssign(self, val):
-        if val.name.lexeme not in self.env:
-            raise RuntimeException(f"variable not found: {val.name}")
         value = None
         if val.value:
             value = val.value.visit(self)
-        self.env[val.name.lexeme] = value
+        self.env.assign(val.name.lexeme, value)
 
     def visitBlock(self, val):
-        raise Exception("not implemented")
+        priorEnv = self.env
+        env = Environment(self.env)
+        try:
+            self.env = env
+            for stmt in val.statements:
+                stmt.visit(self)
+
+        except Exception as e:
+            raise e
+        self.env = priorEnv
 
 
 if __name__ == "__main__":
