@@ -1,6 +1,6 @@
 import operator
 
-from environment import Environment
+from environment import Environment, Undefined
 from expr import ExprVisitor
 from stmt import StmtVisitor
 from tokens import TokenType
@@ -124,16 +124,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return self.env.get(val.name.lexeme)
 
     def visitVar(self, val):
-        value = None
+        value = Undefined
         if val.value:
             value = val.value.visit(self)
         self.env.define(val.name.lexeme, value)
 
     def visitAssign(self, val):
-        value = None
-        if val.value:
-            value = val.value.visit(self)
-        self.env.assign(val.name.lexeme, value)
+        self.env.assign(val.name.lexeme, val.value.visit(self))
 
     def visitBlock(self, val):
         priorEnv = self.env

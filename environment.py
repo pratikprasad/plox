@@ -1,15 +1,19 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 from util import RuntimeException
 
 
+class Undefined:
+    pass
+
+
 class Environment:
-    data: Dict
+    data: Dict[str, Any]
 
     def __init__(self, parent=None):
         self.parent: Optional[Environment] = parent
         self.data = {}
 
-    def define(self, name, value=None):
+    def define(self, name, value: Any = Undefined):
         if name in self.data:
             raise RuntimeException(f"Variable already defined: {name}")
         self.data[name] = value
@@ -25,6 +29,9 @@ class Environment:
 
     def get(self, name):
         if name in self.data:
+            value = self.data[name]
+            if value == Undefined:
+                raise RuntimeException(f"Variable initialized but not defined: {name}")
             return self.data[name]
         if self.parent:
             return self.parent.get(name)
