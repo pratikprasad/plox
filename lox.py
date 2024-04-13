@@ -24,12 +24,14 @@ def runPrompt():
     inpr = Interpreter()
 
     while True:
-        # try:
-        line = input("> ")
-        expr = Parse(line)[0]
-        expr.visit(inpr)
-    # except Exception as e:
-    # print(e)
+        try:
+            line = input("> ")
+            expr = Parse(line)[0]
+            out = expr.visit(inpr)
+            if out is not None:
+                print(out)
+        except Exception as e:
+            print(e)
 
 
 args = sys.argv[1:]
