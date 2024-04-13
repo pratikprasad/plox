@@ -17,9 +17,9 @@ class Environment:
     def assign(self, name, value):
         if name in self.data:
             self.data[name] = value
-
+            return
         if self.parent:
-            self.parent.assign(name, value)
+            return self.parent.assign(name, value)
 
         raise RuntimeException(f"Assignment to undefined variable: {name}")
 

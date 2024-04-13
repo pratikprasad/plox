@@ -1,5 +1,4 @@
 import operator
-from typing import Dict
 
 from environment import Environment
 from expr import ExprVisitor
