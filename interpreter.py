@@ -141,6 +141,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
             value = val.value.visit(self)
         self.env[val.name.lexeme] = value
 
+    def visitBlock(self, val):
+        raise Exception("not implemented")
+
 
 if __name__ == "__main__":
     inpr = Interpreter()

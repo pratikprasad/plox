@@ -2,7 +2,7 @@ from typing import List, Optional
 from dataclasses import dataclass
 
 from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign
-from stmt import Print, Expression, Stmt, Var
+from stmt import Print, Expression, Stmt, Var, Block
 from tokens import *
 from scanner import Scanner
 
@@ -183,10 +183,29 @@ Version 11 -- add assignment
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+
+Version 12 -- add block statement
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt | block
+    block -> "{" declaration* "}"
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
 """
 
 
-def declaration(ti) -> Optional[Stmt]:
+def declaration(ti):
     try:
         if ti.match(TokenType.VAR):
             return varDecl(ti)
@@ -206,7 +225,17 @@ def varDecl(ti) -> Stmt:
     return Var(name, initializer)
 
 
+def block(ti):
+    out = []
+    while not ti.check(TokenType.RIGHT_BRACE) and not ti.isAtEnd():
+        out.append(declaration(ti))
+    ti.consume(TokenType.RIGHT_BRACE, "Expect block to end with '}'")
+    return Block(out)
+
+
 def statement(ti):
+    if ti.match(TokenType.LEFT_BRACE):
+        return block(ti)
     if ti.match(TokenType.PRINT):
         return printStmt(ti)
     return exprStmt(ti)

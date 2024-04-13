@@ -43,11 +43,14 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
     def visitAssign(self, val):
         return f"(assign {val.name.lexeme} {val.value.visit(self)})"
 
+    def visitBlock(self, val):
+        return f'(block {" ".join([v.visit(self) for v in val.statements])})'
+
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""
     text = expression
-    if expression[-1] != ";":
+    if expression[-1] not in {";", "}"}:
         text += ";"
     expr = Parse(text)[0]
     return expr.visit(ExprPrinter())
@@ -56,3 +59,4 @@ def PolishNotation(expression):
 if __name__ == "__main__":
     print(PolishNotation("1+2+3;"))
     print(PolishNotation("a = 3;"))
+    print(PolishNotation("{ var a = 1; var b = 3; }"))

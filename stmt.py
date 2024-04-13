@@ -1,6 +1,6 @@
 from expr import Expr
 from tokens import Token
-from typing import NamedTuple, Optional, Any
+from typing import NamedTuple, Optional, Any, List
 
 from abc import abstractmethod, ABC
 
@@ -25,6 +25,10 @@ class _Var(NamedTuple):
     value: Optional[Expr]
 
 
+class _Block(NamedTuple):
+    statements: List[Stmt]
+
+
 class StmtVisitor(ABC):
     @abstractmethod
     def visitPrint(self, val: _Print) -> Any:
@@ -36,6 +40,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visitExpression(self, val: _Expression) -> Any:
+        pass
+
+    @abstractmethod
+    def visitBlock(self, val: _Block) -> Any:
         pass
 
 
@@ -52,3 +60,8 @@ class Print(_Print, Stmt):
 class Expression(_Expression, Stmt):
     def visit(self, vis: StmtVisitor):
         return vis.visitExpression(self)
+
+
+class Block(_Block, Stmt):
+    def visit(self, vis: StmtVisitor):
+        return vis.visitBlock(self)

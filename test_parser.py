@@ -139,3 +139,11 @@ class TestAssignment(unittest.TestCase):
     def testMisc(self):
         self.assertEqual(PolishNotation("a= 3"), "(assign a 3.0)")
         self.assertEqual(PolishNotation(" potato = 3"), "(assign potato 3.0)")
+
+
+class TestBlock(unittest.TestCase):
+    def testMisc(self):
+        self.assertEqual(
+            PolishNotation("{ var a = 1; var b = 2; a = 3;}"),
+            "(block (var a 1.0) (var b 2.0) (assign a 3.0))",
+        )
