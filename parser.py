@@ -2,7 +2,7 @@ from typing import List, Optional
 from dataclasses import dataclass
 
 from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign
-from stmt import Print, Expression, Stmt, Var, Block
+from stmt import Print, Expression, Stmt, Var, Block, IfStmt
 from tokens import *
 from scanner import Scanner
 
@@ -202,6 +202,26 @@ Version 12 -- add block statement
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+
+Version 13 -- if statement
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt | block | ifStmt
+    ifStmt -> "if" "(" expression ")" statement ("else" statement)?
+    block -> "{" declaration* "}"
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | ternary
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
 """
 
 
@@ -233,11 +253,24 @@ def block(ti):
     return Block(out)
 
 
+def ifStmt(ti):
+    ti.consume(TokenType.LEFT_PAREN, "Expect ( after if")
+    condition = expression(ti)
+    ti.consume(TokenType.RIGHT_PAREN, "Expect ) after if condition")
+    thenBranch = statement(ti)
+    elseBranch = None
+    if ti.match(TokenType.ELSE):
+        elseBranch = statement(ti)
+    return IfStmt(condition, thenBranch, elseBranch)
+
+
 def statement(ti):
     if ti.match(TokenType.LEFT_BRACE):
         return block(ti)
     if ti.match(TokenType.PRINT):
         return printStmt(ti)
+    if ti.match(TokenType.IF):
+        return ifStmt(ti)
     return exprStmt(ti)
 
 

@@ -2,6 +2,7 @@ import subprocess
 import unittest
 
 CASES = {
+    "conditions": ("lolol\n3.0\n", ""),
     "scoping": ("3.0\n", ""),
     "variable": ("3.0\n", "Variable initialized but not defined: c"),
     "blocks": (

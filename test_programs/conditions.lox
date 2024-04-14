@@ -1,0 +1,7 @@
+if (true)
+  print "lolol";
+
+if (false)
+  print "lolol";
+else
+  print 1+1+1;

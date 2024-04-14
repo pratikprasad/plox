@@ -144,6 +144,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
             raise e
         self.env = priorEnv
 
+    def visitIfStmt(self, val):
+        if isTruthy(val.condition.visit(self)):
+            return val.thenBranch.visit(self)
+        if val.elseBranch is not None:
+            val.elseBranch.visit(self)
+
 
 if __name__ == "__main__":
     inpr = Interpreter()

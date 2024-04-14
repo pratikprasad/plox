@@ -29,6 +29,12 @@ class _Block(NamedTuple):
     statements: List[Stmt]
 
 
+class _IfStmt(NamedTuple):
+    condition: Expr
+    thenBranch: Stmt
+    elseBranch: Optional[Stmt]
+
+
 class StmtVisitor(ABC):
     @abstractmethod
     def visitPrint(self, val: _Print) -> Any:
@@ -44,6 +50,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visitBlock(self, val: _Block) -> Any:
+        pass
+
+    @abstractmethod
+    def visitIfStmt(self, val: _IfStmt) -> Any:
         pass
 
 
@@ -65,3 +75,8 @@ class Expression(_Expression, Stmt):
 class Block(_Block, Stmt):
     def visit(self, vis: StmtVisitor):
         return vis.visitBlock(self)
+
+
+class IfStmt(_IfStmt, Stmt):
+    def visit(self, vis: StmtVisitor):
+        return vis.visitIfStmt(self)

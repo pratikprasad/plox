@@ -46,6 +46,12 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
     def visitBlock(self, val):
         return f'(block {" ".join([v.visit(self) for v in val.statements])})'
 
+    def visitIfStmt(self, val):
+        elseBranch = ""
+        if val.elseBranch is not None:
+            elseBranch = val.elseBranch.visit(self)
+        return f"(if {val.condition.visit(self)} {val.thenBranch.visit(self)} {elseBranch})"
+
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""
