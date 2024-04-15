@@ -3,6 +3,7 @@ from tokens import Token
 from typing import NamedTuple, Optional, Any, List
 
 from abc import abstractmethod, ABC
+from util import Visitable
 
 
 class Stmt(ABC):
@@ -57,26 +58,29 @@ class StmtVisitor(ABC):
         pass
 
 
-class Var(_Var, Stmt):
-    def visit(self, vis: StmtVisitor):
-        return vis.visitVar(self)
+class Var(Visitable, Stmt, _Var):
+    pass
 
 
-class Print(_Print, Stmt):
-    def visit(self, vis: StmtVisitor):
-        return vis.visitPrint(self)
+class Print(Visitable, Stmt, _Print):
+    pass
 
 
-class Expression(_Expression, Stmt):
-    def visit(self, vis: StmtVisitor):
-        return vis.visitExpression(self)
+class Expression(
+    Visitable,
+    Stmt,
+    _Expression,
+):
+    pass
 
 
-class Block(_Block, Stmt):
-    def visit(self, vis: StmtVisitor):
-        return vis.visitBlock(self)
+class Block(
+    Visitable,
+    Stmt,
+    _Block,
+):
+    pass
 
 
-class IfStmt(_IfStmt, Stmt):
-    def visit(self, vis: StmtVisitor):
-        return vis.visitIfStmt(self)
+class IfStmt(Visitable, Stmt, _IfStmt):
+    pass

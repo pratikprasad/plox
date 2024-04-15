@@ -2,6 +2,7 @@ from typing import Any, NamedTuple
 
 from tokens import Token
 from abc import ABC, abstractmethod
+from util import Visitable
 
 
 class Expr(ABC):
@@ -77,36 +78,29 @@ class ExprVisitor(ABC):
         pass
 
 
-class Variable(_Variable, Expr):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitVariable(self)
+class Variable(Visitable, Expr, _Variable):
+    pass
 
 
-class Binary(Expr, _Binary):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitBinary(self)
+class Binary(Visitable, Expr, _Binary):
+    pass
 
 
-class Literal(Expr, _Literal):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitLiteral(self)
+class Literal(Visitable, Expr, _Literal):
+    pass
 
 
-class Ternary(Expr, _Ternary):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitTernary(self)
+class Ternary(Visitable, Expr, _Ternary):
+    pass
 
 
-class Grouping(Expr, _Grouping):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitGrouping(self)
+class Grouping(Visitable, Expr, _Grouping):
+    pass
 
 
-class Unary(Expr, _Unary):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitUnary(self)
+class Unary(Visitable, Expr, _Unary):
+    pass
 
 
-class Assign(_Assign, Expr):
-    def visit(self, vis: ExprVisitor):
-        return vis.visitAssign(self)
+class Assign(Visitable, Expr, _Assign):
+    pass
