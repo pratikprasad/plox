@@ -158,6 +158,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
             return left
         return val.right.visit(self)
 
+    def visitWhileStmt(self, val):
+        return True
+
 
 if __name__ == "__main__":
     inpr = Interpreter()

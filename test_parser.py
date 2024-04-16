@@ -166,3 +166,28 @@ class TestLogical(unittest.TestCase):
             PolishNotation("var a = true and (false or 2);"),
             "(var a (and True (group (or False 2.0))))",
         )
+
+
+class TestWhile(unittest.TestCase):
+    def testMisc(self):
+        self.maxDiff = None
+        self.assertEqual(
+            PolishNotation(
+                """
+            while (true)
+              print 3;""",
+            ),
+            "(while True (print 3.0))",
+        )
+        self.assertEqual(
+            PolishNotation(
+                """
+            while (a == b) {
+              print a;
+              print b;
+              print c;
+              print a+b or false;
+              }""",
+            ),
+            "(while (== (var a) (var b)) (block (print (var a)) (print (var b)) (print (var c)) (print (or (+ (var a) (var b)) False))))",
+        )

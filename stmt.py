@@ -33,6 +33,11 @@ class _IfStmt(NamedTuple):
     elseBranch: Optional[Stmt]
 
 
+class _WhileStmt(NamedTuple):
+    condition: Expr
+    body: Stmt
+
+
 class StmtVisitor(ABC):
     @abstractmethod
     def visitPrint(self, val: _Print) -> Any:
@@ -52,6 +57,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visitIfStmt(self, val: _IfStmt) -> Any:
+        pass
+
+    @abstractmethod
+    def visitWhileStmt(self, val: _WhileStmt) -> Any:
         pass
 
 
@@ -78,4 +87,8 @@ class Block(
 
 
 class IfStmt(Stmt, _IfStmt):
+    pass
+
+
+class WhileStmt(Stmt, _WhileStmt):
     pass

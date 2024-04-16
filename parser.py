@@ -2,7 +2,7 @@ from typing import List
 from dataclasses import dataclass
 
 from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign, Logical
-from stmt import Print, Expression, Stmt, Var, Block, IfStmt
+from stmt import Print, Expression, Stmt, Var, Block, IfStmt, WhileStmt
 from tokens import *
 from scanner import Scanner
 
@@ -63,6 +63,9 @@ class TokenIter:
 
 
 def declaration(ti):
+    if ti.match(TokenType.VAR):
+        return varDecl(ti)
+    return statement(ti)
     try:
         if ti.match(TokenType.VAR):
             return varDecl(ti)
@@ -90,6 +93,15 @@ def block(ti):
     return Block(out)
 
 
+def whileStmt(ti):
+    ti.consume(TokenType.LEFT_PAREN, "Expect '(' after while")
+    condition = expression(ti)
+    ti.consume(TokenType.RIGHT_PAREN, "Expect ')' after while")
+    body = statement(ti)
+
+    return WhileStmt(condition, body)
+
+
 def ifStmt(ti):
     ti.consume(TokenType.LEFT_PAREN, "Expect ( after if")
     condition = expression(ti)
@@ -108,6 +120,8 @@ def statement(ti):
         return printStmt(ti)
     if ti.match(TokenType.IF):
         return ifStmt(ti)
+    if ti.match(TokenType.WHILE):
+        return whileStmt(ti)
     return exprStmt(ti)
 
 

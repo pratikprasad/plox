@@ -26,7 +26,7 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
         )
 
     def visitVariable(self, val):
-        return f"(var {val.name})"
+        return f"(var {val.name.lexeme})"
 
     def visitPrint(self, val):
         return f"(print {val.expression.visit(self)})"
@@ -54,6 +54,9 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
 
     def visitLogical(self, val):
         return f"({val.operator.lexeme} {val.left.visit(self)} {val.right.visit(self)})"
+
+    def visitWhileStmt(self, val):
+        return f"(while {val.condition.visit(self)} {val.body.visit(self)})"
 
 
 def PolishNotation(expression):
