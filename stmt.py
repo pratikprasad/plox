@@ -6,11 +6,8 @@ from abc import abstractmethod, ABC
 from util import Visitable
 
 
-class Stmt(ABC):
-
-    @abstractmethod
-    def visit(self, vis):
-        raise Exception("Stmt visit called")
+class Stmt(Visitable):
+    pass
 
 
 class _Expression(NamedTuple):
@@ -58,16 +55,15 @@ class StmtVisitor(ABC):
         pass
 
 
-class Var(Visitable, Stmt, _Var):
+class Var(Stmt, _Var):
     pass
 
 
-class Print(Visitable, Stmt, _Print):
+class Print(Stmt, _Print):
     pass
 
 
 class Expression(
-    Visitable,
     Stmt,
     _Expression,
 ):
@@ -75,12 +71,11 @@ class Expression(
 
 
 class Block(
-    Visitable,
     Stmt,
     _Block,
 ):
     pass
 
 
-class IfStmt(Visitable, Stmt, _IfStmt):
+class IfStmt(Stmt, _IfStmt):
     pass

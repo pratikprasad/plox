@@ -5,12 +5,8 @@ from abc import ABC, abstractmethod
 from util import Visitable
 
 
-class Expr(ABC):
-    """"""
-
-    @abstractmethod
-    def visit(self, vis):
-        pass
+class Expr(Visitable):
+    pass
 
 
 class _Literal(NamedTuple):
@@ -78,29 +74,29 @@ class ExprVisitor(ABC):
         pass
 
 
-class Variable(Visitable, Expr, _Variable):
+class Variable(Expr, _Variable):
     pass
 
 
-class Binary(Visitable, Expr, _Binary):
+class Binary(Expr, _Binary):
     pass
 
 
-class Literal(Visitable, Expr, _Literal):
+class Literal(Expr, _Literal):
     pass
 
 
-class Ternary(Visitable, Expr, _Ternary):
+class Ternary(Expr, _Ternary):
     pass
 
 
-class Grouping(Visitable, Expr, _Grouping):
+class Grouping(Expr, _Grouping):
     pass
 
 
-class Unary(Visitable, Expr, _Unary):
+class Unary(Expr, _Unary):
     pass
 
 
-class Assign(Visitable, Expr, _Assign):
+class Assign(Expr, _Assign):
     pass
