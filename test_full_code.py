@@ -2,6 +2,20 @@ import subprocess
 import unittest
 
 CASES = {
+    "while": (
+        """1.0
+2.0
+3.0
+4.0
+5.0
+6.0
+7.0
+8.0
+9.0
+10.0
+""",
+        "",
+    ),
     "conditions": ("lolol\n3.0\n", ""),
     "scoping": ("3.0\n", ""),
     "variable": ("3.0\n", "Variable initialized but not defined: c"),
