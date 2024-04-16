@@ -3,13 +3,10 @@ from interpreter import Interpreter
 from parser import Parse
 
 
-def getLastLine(program):
+def getLines(program):
     expr = Parse(program)
     inpr = Interpreter()
-    last = None
-    for line in expr:
-        last = line.visit(inpr)
-    return last
+    return [line.visit(inpr) for line in expr]
 
 
 class TestInterpreter(unittest.TestCase):
@@ -21,7 +18,7 @@ class TestInterpreter(unittest.TestCase):
         a = a - 1;
         a + 2;"""
 
-        self.assertEqual(getLastLine(program), 6.0)
+        self.assertEqual(getLines(program)[-1], 6.0)
 
     def testLogicalOperators(self):
         program = """
@@ -29,18 +26,18 @@ class TestInterpreter(unittest.TestCase):
         var b = false;
         b or a;
         """
-        self.assertEqual(getLastLine(program), 2.0)
+        self.assertEqual(getLines(program)[-1], 2.0)
 
         program = """
         var a = 2;
         var b = false;
         a and b;
         """
-        self.assertEqual(getLastLine(program), False)
+        self.assertEqual(getLines(program)[-1], False)
 
         program = """
         var a = 2;
         var b = false;
         nil or a and b;
         """
-        self.assertEqual(getLastLine(program), False)
+        self.assertEqual(getLines(program)[-1], False)

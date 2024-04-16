@@ -159,7 +159,8 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return val.right.visit(self)
 
     def visitWhileStmt(self, val):
-        return True
+        while isTruthy(val.condition.visit(self)):
+            val.body.visit(self)
 
 
 if __name__ == "__main__":
