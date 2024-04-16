@@ -201,3 +201,27 @@ Version 15 -- while loop
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+
+Version 16 -- for loop
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt
+    forStmt -> "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement 
+    whileStmt -> "while" "(" expression ")" statement
+    ifStmt -> "if" "(" expression ")" statement ("else" statement)?
+    block -> "{" declaration* "}"
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | logic_or
+    logic_or -> logic_and ("or" logic_and)*
+    logic_and -> ternary ("and" ternary)*
+    ternary -> comma | comma "?" comma : comma 
+    comma -> comparision (, comparision)*
+    comparison -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | primary
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER

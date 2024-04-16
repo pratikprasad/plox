@@ -113,7 +113,40 @@ def ifStmt(ti):
     return IfStmt(condition, thenBranch, elseBranch)
 
 
-def statement(ti):
+def forStmt(ti):
+    ti.consume(TokenType.LEFT_PAREN, "Expect ( after for")
+    initializer = None
+    if ti.match(TokenType.SEMICOLON):
+        pass
+    elif ti.match(TokenType.VAR):
+        initializer = varDecl(ti)
+    else:
+        initializer = exprStmt(ti)
+
+    condition = None
+    if not ti.check(TokenType.SEMICOLON):
+        condition = expression(ti)
+    ti.consume(TokenType.SEMICOLON, "Expect ; after loop condition")
+
+    increment = None
+    if not ti.check(TokenType.RIGHT_PAREN):
+        increment = expression(ti)
+    ti.consume(TokenType.RIGHT_PAREN, "expect ) after for clauses")
+
+    body = statement(ti)
+    if increment is not None:
+        body = Block([body, Expression(increment)])
+    if condition is None:
+        condition = Literal(True)
+    body = WhileStmt(condition, body)
+
+    if initializer is not None:
+        body = Block([initializer, body])
+
+    return body
+
+
+def statement(ti) -> Stmt:
     if ti.match(TokenType.LEFT_BRACE):
         return block(ti)
     if ti.match(TokenType.PRINT):
@@ -122,6 +155,8 @@ def statement(ti):
         return ifStmt(ti)
     if ti.match(TokenType.WHILE):
         return whileStmt(ti)
+    if ti.match(TokenType.FOR):
+        return forStmt(ti)
     return exprStmt(ti)
 
 

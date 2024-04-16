@@ -2,6 +2,15 @@ import subprocess
 import unittest
 
 CASES = {
+    "for": (
+        """0.0
+1.0
+2.0
+3.0
+4.0
+""",
+        "",
+    ),
     "while": (
         """1.0
 2.0
