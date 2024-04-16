@@ -43,6 +43,12 @@ class _Assign(NamedTuple):
     value: Expr
 
 
+class _Logical(NamedTuple):
+    left: Expr
+    operator: Token
+    right: Expr
+
+
 class ExprVisitor(ABC):
 
     @abstractmethod
@@ -73,6 +79,10 @@ class ExprVisitor(ABC):
     def visitAssign(self, val: _Assign) -> Any:
         pass
 
+    @abstractmethod
+    def visitLogical(self, val: _Logical) -> Any:
+        pass
+
 
 class Variable(Expr, _Variable):
     pass
@@ -99,4 +109,8 @@ class Unary(Expr, _Unary):
 
 
 class Assign(Expr, _Assign):
+    pass
+
+
+class Logical(Expr, _Logical):
     pass

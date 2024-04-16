@@ -147,3 +147,22 @@ class TestBlock(unittest.TestCase):
             PolishNotation("{ var a = 1; var b = 2; a = 3;}"),
             "(block (var a 1.0) (var b 2.0) (assign a 3.0))",
         )
+
+
+class TestLogical(unittest.TestCase):
+    def testMisc(self):
+        self.assertEqual(
+            PolishNotation("var a = 23 or false;"),
+            "(var a (or 23.0 False))",
+        )
+        self.assertEqual(
+            PolishNotation("var a = true and false;"), "(var a (and True False))"
+        )
+        self.assertEqual(
+            PolishNotation("var a = true and false or 2;"),
+            "(var a (or (and True False) 2.0))",
+        )
+        self.assertEqual(
+            PolishNotation("var a = true and (false or 2);"),
+            "(var a (and True (group (or False 2.0))))",
+        )

@@ -150,6 +150,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if val.elseBranch is not None:
             val.elseBranch.visit(self)
 
+    def visitLogical(self, val):
+        return True
+
 
 if __name__ == "__main__":
     inpr = Interpreter()

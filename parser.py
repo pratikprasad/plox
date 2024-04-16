@@ -1,7 +1,7 @@
 from typing import List
 from dataclasses import dataclass
 
-from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign
+from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign, Logical
 from stmt import Print, Expression, Stmt, Var, Block, IfStmt
 from tokens import *
 from scanner import Scanner
@@ -127,9 +127,28 @@ def expression(ti: TokenIter):
     return assignment(ti)
 
 
+def logic_or(ti):
+    left = logic_and(ti)
+    while ti.match(TokenType.OR):
+        operator = ti.previous()
+        right = logic_and(ti)
+        left = Logical(left, operator, right)
+    return left
+
+
+def logic_and(ti):
+    left = ternary(ti)
+    while ti.match(TokenType.AND):
+        operator = ti.previous()
+        right = ternary(ti)
+        left = Logical(left, operator, right)
+    return left
+
+
 def assignment(ti):
     """"""
-    expr = ternary(ti)
+    expr = logic_or(ti)
+
     if ti.match(TokenType.EQUAL):
         eql = ti.previous()
         value = assignment(ti)

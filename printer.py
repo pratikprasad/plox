@@ -52,6 +52,9 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
             elseBranch = val.elseBranch.visit(self)
         return f"(if {val.condition.visit(self)} {val.thenBranch.visit(self)} {elseBranch})"
 
+    def visitLogical(self, val):
+        return f"({val.operator.lexeme} {val.left.visit(self)} {val.right.visit(self)})"
+
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""
