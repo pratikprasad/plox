@@ -151,7 +151,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
             val.elseBranch.visit(self)
 
     def visitLogical(self, val):
-        return True
+        left = val.left.visit(self)
+        if val.operator.type == TokenType.OR and isTruthy(left):
+            return left
+        if val.operator.type == TokenType.AND and not isTruthy(left):
+            return left
+        return val.right.visit(self)
 
 
 if __name__ == "__main__":
