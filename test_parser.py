@@ -191,3 +191,16 @@ class TestWhile(unittest.TestCase):
             ),
             "(while (== (var a) (var b)) (block (print (var a)) (print (var b)) (print (var c)) (print (or (+ (var a) (var b)) False))))",
         )
+        self.assertEqual(
+            PolishNotation(
+                """
+            while (a == b) {
+              print a;
+              print b;
+              break;
+              print c;
+              print a+b or false;
+              }""",
+            ),
+            "(while (== (var a) (var b)) (block (print (var a)) (print (var b)) (break) (print (var c)) (print (or (+ (var a) (var b)) False))))",
+        )

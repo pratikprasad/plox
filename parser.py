@@ -2,7 +2,7 @@ from typing import List
 from dataclasses import dataclass
 
 from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign, Logical
-from stmt import Print, Expression, Stmt, Var, Block, IfStmt, WhileStmt
+from stmt import BreakStmt, Print, Expression, Stmt, Var, Block, IfStmt, WhileStmt
 from tokens import *
 from scanner import Scanner
 
@@ -157,7 +157,15 @@ def statement(ti) -> Stmt:
         return whileStmt(ti)
     if ti.match(TokenType.FOR):
         return forStmt(ti)
+    if ti.match(TokenType.BREAK):
+        return breakStmt(ti)
     return exprStmt(ti)
+
+
+def breakStmt(ti):
+    out = BreakStmt()
+    ti.consume(TokenType.SEMICOLON, "Expect break statement to end with ';'")
+    return out
 
 
 def exprStmt(ti: TokenIter):

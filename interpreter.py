@@ -4,7 +4,7 @@ from environment import Environment, Undefined
 from expr import ExprVisitor
 from stmt import StmtVisitor
 from tokens import TokenType
-from util import RuntimeException
+from util import BreakException, RuntimeException
 
 
 def isTruthy(value):
@@ -160,7 +160,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visitWhileStmt(self, val):
         while isTruthy(val.condition.visit(self)):
-            val.body.visit(self)
+            try:
+                val.body.visit(self)
+            except BreakException as _:
+                return
+
+    def visitBreakStmt(self, val):
+        raise BreakException()
 
 
 if __name__ == "__main__":

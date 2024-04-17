@@ -58,6 +58,9 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
     def visitWhileStmt(self, val):
         return f"(while {val.condition.visit(self)} {val.body.visit(self)})"
 
+    def visitBreakStmt(self, val):
+        return "(break)"
+
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""

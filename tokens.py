@@ -33,11 +33,12 @@ class TokenType(Enum):
     NUMBER = "NUMBER"
 
     AND = "and"
+    BREAK = "break"
     CLASS = "class"
     ELSE = "else"
     FALSE = "false"
-    FUN = "fun"
     FOR = "for"
+    FUN = "fun"
     IF = "if"
     NIL = "nil"
     OR = "or"
@@ -48,7 +49,6 @@ class TokenType(Enum):
     TRUE = "true"
     VAR = "var"
     WHILE = "while"
-
     EOF = ""
 
 
@@ -75,6 +75,7 @@ RESERVED_KEYWORDS = {
     tp.value
     for tp in [
         TokenType.AND,
+        TokenType.BREAK,
         TokenType.CLASS,
         TokenType.ELSE,
         TokenType.FALSE,

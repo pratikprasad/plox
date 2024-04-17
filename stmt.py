@@ -63,6 +63,10 @@ class StmtVisitor(ABC):
     def visitWhileStmt(self, val: _WhileStmt) -> Any:
         pass
 
+    @abstractmethod
+    def visitBreakStmt(self, val: None) -> Any:
+        pass
+
 
 class Var(Stmt, _Var):
     pass
@@ -91,4 +95,8 @@ class IfStmt(Stmt, _IfStmt):
 
 
 class WhileStmt(Stmt, _WhileStmt):
+    pass
+
+
+class BreakStmt(Stmt):
     pass
