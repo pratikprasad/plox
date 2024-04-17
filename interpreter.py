@@ -1,10 +1,11 @@
+import time
 import operator
 
 from environment import Environment, Undefined
 from expr import ExprVisitor
 from stmt import StmtVisitor
 from tokens import TokenType
-from util import BreakException, RuntimeException
+from util import BreakException, RuntimeException, LoxFunction
 
 
 def isTruthy(value):
@@ -59,7 +60,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
     """"""
 
     def __init__(self):
-        self.env = Environment()
+        self.globals = Environment()
+        self.env = self.globals
+        self.globals.define(
+            "clock", LoxFunction(lambda: 0, lambda _, __: time.time_ns())
+        )
 
     def visitLiteral(self, val):
         return val.value
@@ -169,7 +174,18 @@ class Interpreter(ExprVisitor, StmtVisitor):
         raise BreakException()
 
     def visitCall(self, val):
-        return True
+        callee = val.callee.visit(self)
+        args = [arg.visit(self) for arg in val.arguments]
+
+        callFunc = getattr(callee, "call", None)
+        arityFunc = getattr(callee, "arity")
+        if callFunc is None or arityFunc is None:
+            raise RuntimeException("Can only call functions and classes")
+        if arityFunc() != len(args):
+            # TODO: more helpful instruction
+            raise RuntimeException("Wrong arity for function")
+
+        return callFunc(self, args)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,11 @@
+from typing import Any, Callable, NamedTuple
+
+
+class LoxFunction(NamedTuple):
+    arity: Callable[[], int]
+    call: Callable[[Any, Any], Any]
+
+
 class BreakException(Exception):
     pass
 

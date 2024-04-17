@@ -1,3 +1,4 @@
+from logging import error
 from typing import List
 from dataclasses import dataclass
 
@@ -298,6 +299,8 @@ def finishCall(ti, callee):
         arguments.append(expression(ti))
         if not ti.match(TT.COMMA):
             break
+    if len(arguments) > 255:
+        error(ti.peek(), "Can't have more than 255 arguments")
     paren = ti.consume(TT.RIGHT_PAREN, "Expect ) after arguments")
     return Call(callee, paren, arguments)
 
