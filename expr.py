@@ -17,7 +17,6 @@ class Literal(Expr, _Literal):
     pass
 
 
-# TODO: is there a way to declare another class as a sideeffect of a decorator
 class _Call(NamedTuple):
     callee: Expr
     paren: Token
