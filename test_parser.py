@@ -114,15 +114,6 @@ class TestBooleanOperations(unittest.TestCase):
         )
 
 
-class TestCommaOperations(unittest.TestCase):
-    def testMisc(self):
-        self.assertEqual(PolishNotation("(3, 4, 5)"), "(group (, (, 3.0 4.0) 5.0))")
-        self.assertEqual(
-            PolishNotation("(true, 3 == 4 - 2, 5)"),
-            "(group (, (, True (== 3.0 (- 4.0 2.0))) 5.0))",
-        )
-
-
 class TestTernary(unittest.TestCase):
     def testMisc(self):
         self.assertEqual(
@@ -203,4 +194,12 @@ class TestWhile(unittest.TestCase):
               }""",
             ),
             "(while (== (var a) (var b)) (block (print (var a)) (print (var b)) (break) (print (var c)) (print (or (+ (var a) (var b)) False))))",
+        )
+
+
+class TestFunction(unittest.TestCase):
+    def testMisc(self):
+        self.assertEqual(
+            PolishNotation("RandoFunction(123, 34, x+y);"),
+            "(call (var RandoFunction) (args 123.0, 34.0, '(+ (var x) (var y))')",
         )

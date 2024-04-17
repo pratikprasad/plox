@@ -1,9 +1,19 @@
 from typing import List
 from dataclasses import dataclass
 
-from expr import Unary, Binary, Literal, Grouping, Ternary, Variable, Assign, Logical
+from expr import (
+    Unary,
+    Binary,
+    Literal,
+    Grouping,
+    Ternary,
+    Variable,
+    Assign,
+    Logical,
+    Call,
+)
 from stmt import BreakStmt, Print, Expression, Stmt, Var, Block, IfStmt, WhileStmt
-from tokens import *
+from tokens import TokenType as TT, Token
 from scanner import Scanner
 
 
@@ -21,12 +31,12 @@ class TokenIter:
         return self.previous()
 
     def isAtEnd(self):
-        return self.peek().type == TokenType.EOF
+        return self.peek().type == TT.EOF
 
     def peek(self):
         return self.tokens[self.current]
 
-    def check(self, token_type: TokenType) -> bool:
+    def check(self, token_type: TT) -> bool:
         if self.isAtEnd():
             return False
         return self.peek().type == token_type
@@ -38,7 +48,7 @@ class TokenIter:
                 return True
         return False
 
-    def consume(self, token_type: TokenType, message: str) -> Token:
+    def consume(self, token_type: TT, message: str) -> Token:
         if self.check(token_type):
             return self.advance()
         raise Exception(f"Peek: \n {self.peek()} \n\nError: \n {message}")
@@ -46,28 +56,28 @@ class TokenIter:
     def synchronize(self):
         self.advance()
         while not self.isAtEnd():
-            if self.previous().type == TokenType.SEMICOLON:
+            if self.previous().type == TT.SEMICOLON:
                 return
             if self.peek().type in {
-                TokenType.CLASS,
-                TokenType.FUN,
-                TokenType.VAR,
-                TokenType.FOR,
-                TokenType.IF,
-                TokenType.WHILE,
-                TokenType.PRINT,
-                TokenType.RETURN,
+                TT.CLASS,
+                TT.FUN,
+                TT.VAR,
+                TT.FOR,
+                TT.IF,
+                TT.WHILE,
+                TT.PRINT,
+                TT.RETURN,
             }:
                 return
             self.advance()
 
 
 def declaration(ti):
-    if ti.match(TokenType.VAR):
+    if ti.match(TT.VAR):
         return varDecl(ti)
     return statement(ti)
     try:
-        if ti.match(TokenType.VAR):
+        if ti.match(TT.VAR):
             return varDecl(ti)
         return statement(ti)
     except Exception as e:
@@ -77,61 +87,61 @@ def declaration(ti):
 
 
 def varDecl(ti) -> Stmt:
-    name = ti.consume(TokenType.IDENTIFIER, "Expect variable name")
+    name = ti.consume(TT.IDENTIFIER, "Expect variable name")
     initializer = None
-    if ti.match(TokenType.EQUAL):
+    if ti.match(TT.EQUAL):
         initializer = expression(ti)
-    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    ti.consume(TT.SEMICOLON, "Expect statement to end with ';'")
     return Var(name, initializer)
 
 
 def block(ti):
     out = []
-    while not ti.check(TokenType.RIGHT_BRACE) and not ti.isAtEnd():
+    while not ti.check(TT.RIGHT_BRACE) and not ti.isAtEnd():
         out.append(declaration(ti))
-    ti.consume(TokenType.RIGHT_BRACE, "Expect block to end with '}'")
+    ti.consume(TT.RIGHT_BRACE, "Expect block to end with '}'")
     return Block(out)
 
 
 def whileStmt(ti):
-    ti.consume(TokenType.LEFT_PAREN, "Expect '(' after while")
+    ti.consume(TT.LEFT_PAREN, "Expect '(' after while")
     condition = expression(ti)
-    ti.consume(TokenType.RIGHT_PAREN, "Expect ')' after while")
+    ti.consume(TT.RIGHT_PAREN, "Expect ')' after while")
     body = statement(ti)
 
     return WhileStmt(condition, body)
 
 
 def ifStmt(ti):
-    ti.consume(TokenType.LEFT_PAREN, "Expect ( after if")
+    ti.consume(TT.LEFT_PAREN, "Expect ( after if")
     condition = expression(ti)
-    ti.consume(TokenType.RIGHT_PAREN, "Expect ) after if condition")
+    ti.consume(TT.RIGHT_PAREN, "Expect ) after if condition")
     thenBranch = statement(ti)
     elseBranch = None
-    if ti.match(TokenType.ELSE):
+    if ti.match(TT.ELSE):
         elseBranch = statement(ti)
     return IfStmt(condition, thenBranch, elseBranch)
 
 
 def forStmt(ti):
-    ti.consume(TokenType.LEFT_PAREN, "Expect ( after for")
+    ti.consume(TT.LEFT_PAREN, "Expect ( after for")
     initializer = None
-    if ti.match(TokenType.SEMICOLON):
+    if ti.match(TT.SEMICOLON):
         pass
-    elif ti.match(TokenType.VAR):
+    elif ti.match(TT.VAR):
         initializer = varDecl(ti)
     else:
         initializer = exprStmt(ti)
 
     condition = None
-    if not ti.check(TokenType.SEMICOLON):
+    if not ti.check(TT.SEMICOLON):
         condition = expression(ti)
-    ti.consume(TokenType.SEMICOLON, "Expect ; after loop condition")
+    ti.consume(TT.SEMICOLON, "Expect ; after loop condition")
 
     increment = None
-    if not ti.check(TokenType.RIGHT_PAREN):
+    if not ti.check(TT.RIGHT_PAREN):
         increment = expression(ti)
-    ti.consume(TokenType.RIGHT_PAREN, "expect ) after for clauses")
+    ti.consume(TT.RIGHT_PAREN, "expect ) after for clauses")
 
     body = statement(ti)
     if increment is not None:
@@ -147,36 +157,36 @@ def forStmt(ti):
 
 
 def statement(ti) -> Stmt:
-    if ti.match(TokenType.LEFT_BRACE):
+    if ti.match(TT.LEFT_BRACE):
         return block(ti)
-    if ti.match(TokenType.PRINT):
+    if ti.match(TT.PRINT):
         return printStmt(ti)
-    if ti.match(TokenType.IF):
+    if ti.match(TT.IF):
         return ifStmt(ti)
-    if ti.match(TokenType.WHILE):
+    if ti.match(TT.WHILE):
         return whileStmt(ti)
-    if ti.match(TokenType.FOR):
+    if ti.match(TT.FOR):
         return forStmt(ti)
-    if ti.match(TokenType.BREAK):
+    if ti.match(TT.BREAK):
         return breakStmt(ti)
     return exprStmt(ti)
 
 
 def breakStmt(ti):
     out = BreakStmt()
-    ti.consume(TokenType.SEMICOLON, "Expect break statement to end with ';'")
+    ti.consume(TT.SEMICOLON, "Expect break statement to end with ';'")
     return out
 
 
 def exprStmt(ti: TokenIter):
     value = expression(ti)
-    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    ti.consume(TT.SEMICOLON, "Expect statement to end with ';'")
     return Expression(value)
 
 
 def printStmt(ti: TokenIter):
     value = expression(ti)
-    ti.consume(TokenType.SEMICOLON, "Expect statement to end with ';'")
+    ti.consume(TT.SEMICOLON, "Expect statement to end with ';'")
     return Print(value)
 
 
@@ -186,7 +196,7 @@ def expression(ti: TokenIter):
 
 def logic_or(ti):
     left = logic_and(ti)
-    while ti.match(TokenType.OR):
+    while ti.match(TT.OR):
         operator = ti.previous()
         right = logic_and(ti)
         left = Logical(left, operator, right)
@@ -195,7 +205,7 @@ def logic_or(ti):
 
 def logic_and(ti):
     left = ternary(ti)
-    while ti.match(TokenType.AND):
+    while ti.match(TT.AND):
         operator = ti.previous()
         right = ternary(ti)
         left = Logical(left, operator, right)
@@ -206,7 +216,7 @@ def assignment(ti):
     """"""
     expr = logic_or(ti)
 
-    if ti.match(TokenType.EQUAL):
+    if ti.match(TT.EQUAL):
         eql = ti.previous()
         value = assignment(ti)
 
@@ -219,44 +229,35 @@ def assignment(ti):
 
 
 def ternary(ti: TokenIter):
-    test = comma(ti)
-    if not ti.match(TokenType.QUESTION):
+    test = equality(ti)
+    if not ti.match(TT.QUESTION):
         return test
 
-    left = comma(ti)
-    if not ti.match(TokenType.COLON):
+    left = equality(ti)
+    if not ti.match(TT.COLON):
         raise Exception("Expected colon for ternary operator")
-    right = comma(ti)
+    right = equality(ti)
 
     return Ternary(test, left, right)
 
 
-def comma(ti: TokenIter):
-    out = equality(ti)
-    while ti.match(TokenType.COMMA):
-        out = Binary(out, ti.previous(), equality(ti))
-    return out
-
-
 def equality(ti):
     out = comparison(ti)
-    while ti.match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
+    while ti.match(TT.EQUAL_EQUAL, TT.BANG_EQUAL):
         out = Binary(out, ti.previous(), comparison(ti))
     return out
 
 
 def comparison(ti):
     out = term(ti)
-    while ti.match(
-        TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL
-    ):
+    while ti.match(TT.GREATER, TT.GREATER_EQUAL, TT.LESS, TT.LESS_EQUAL):
         out = Binary(out, ti.previous(), term(ti))
     return out
 
 
 def term(ti):
     out = factor(ti)
-    while ti.match(TokenType.PLUS, TokenType.MINUS):
+    while ti.match(TT.PLUS, TT.MINUS):
         out = Binary(out, ti.previous(), factor(ti))
 
     return out
@@ -264,36 +265,60 @@ def term(ti):
 
 def factor(ti):
     out = unary(ti)
-    while ti.match(TokenType.STAR, TokenType.SLASH, TokenType.MOD):
+    while ti.match(TT.STAR, TT.SLASH, TT.MOD):
         out = Binary(out, ti.previous(), unary(ti))
 
     return out
 
 
 def unary(ti):
-    if ti.match(TokenType.BANG, TokenType.MINUS):
+    if ti.match(TT.BANG, TT.MINUS):
         return Unary(ti.previous(), unary(ti))
 
-    return primary(ti)
+    return call(ti)
+
+
+def call(ti):
+    expr = primary(ti)
+    while True:
+        if ti.match(TT.LEFT_PAREN):
+            expr = finishCall(ti, expr)
+        else:
+            break
+    return expr
+
+
+def finishCall(ti, callee):
+    if ti.check(TT.RIGHT_PAREN):
+        paren = ti.consume(TT.RIGHT_PAREN, "Expect ) after arguments")
+        return Call(callee, paren, [])
+
+    arguments = []
+    while True:
+        arguments.append(expression(ti))
+        if not ti.match(TT.COMMA):
+            break
+    paren = ti.consume(TT.RIGHT_PAREN, "Expect ) after arguments")
+    return Call(callee, paren, arguments)
 
 
 def primary(ti: TokenIter):
-    if ti.match(TokenType.FALSE):
+    if ti.match(TT.FALSE):
         return Literal(False)
-    if ti.match(TokenType.TRUE):
+    if ti.match(TT.TRUE):
         return Literal(True)
-    if ti.match(TokenType.NIL):
+    if ti.match(TT.NIL):
         return Literal(None)
 
-    if ti.match(TokenType.STRING, TokenType.NUMBER):
+    if ti.match(TT.STRING, TT.NUMBER):
         return Literal(ti.previous().literal)
 
-    if ti.match(TokenType.LEFT_PAREN):
+    if ti.match(TT.LEFT_PAREN):
         expr = expression(ti)
-        ti.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
+        ti.consume(TT.RIGHT_PAREN, "Expect ')' after expression.")
         return Grouping(expr)
 
-    if ti.match(TokenType.IDENTIFIER):
+    if ti.match(TT.IDENTIFIER):
         return Variable(ti.previous())
 
     # TODO fix up the error handling thing

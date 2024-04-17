@@ -1,4 +1,4 @@
-from typing import Any, NamedTuple
+from typing import Any, List, NamedTuple
 
 from tokens import Token
 from abc import ABC, abstractmethod
@@ -11,6 +11,12 @@ class Expr(Visitable):
 
 class _Literal(NamedTuple):
     value: Any
+
+
+class _Call(NamedTuple):
+    callee: Expr
+    paren: Token
+    arguments: List[Expr]
 
 
 class _Unary(NamedTuple):
@@ -83,6 +89,10 @@ class ExprVisitor(ABC):
     def visitLogical(self, val: _Logical) -> Any:
         pass
 
+    @abstractmethod
+    def visitCall(self, val: _Call) -> Any:
+        pass
+
 
 class Variable(Expr, _Variable):
     pass
@@ -113,4 +123,8 @@ class Assign(Expr, _Assign):
 
 
 class Logical(Expr, _Logical):
+    pass
+
+
+class Call(Expr, _Call):
     pass

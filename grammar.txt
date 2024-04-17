@@ -251,3 +251,28 @@ Version 17 -- break statements
     factor -> unary (("%" | \" | "*") unary)*
     unary -> ("!" | "-") unary | primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+
+Version 18 -- function calls, remove comma expression replace with equality
+
+    program -> declaration* EOF
+    declaration -> varDecl | statement
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt
+    forStmt -> "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement 
+    whileStmt -> "while" "(" expression ")" statement
+    ifStmt -> "if" "(" expression ")" statement ("else" statement)?
+    block -> "{" declaration* "}"
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | logic_or
+    logic_or -> logic_and ("or" logic_and)*
+    logic_and -> ternary ("and" ternary)*
+    ternary -> equality | equality "?" equality : equality 
+    equality -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | call
+    call -> primary ( "(" arguments? ")" )*
+    arguments -> expression ("," expression)*
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
