@@ -64,6 +64,12 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
     def visitCall(self, val):
         return f"(call {val.callee.visit(self)} (args {', '.join([repr(arg.visit(self)) for arg in val.arguments])})"
 
+    def visitFunction(self, val):
+        return "Func"
+
+    def visitReturn(self, val):
+        return f"(return {val.expression.visit(self) if val.expression is not None else None})"
+
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""

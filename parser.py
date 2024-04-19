@@ -13,7 +13,18 @@ from expr import (
     Logical,
     Call,
 )
-from stmt import BreakStmt, Print, Expression, Stmt, Var, Block, IfStmt, WhileStmt
+from stmt import (
+    BreakStmt,
+    Function,
+    Print,
+    Expression,
+    Return,
+    Stmt,
+    Var,
+    Block,
+    IfStmt,
+    WhileStmt,
+)
 from tokens import TokenType as TT, Token
 from scanner import Scanner
 
@@ -73,9 +84,30 @@ class TokenIter:
             self.advance()
 
 
+def function(ti, kind):
+    name = ti.consume(TT.IDENTIFIER, f"Expect {kind} name")
+    ti.consume(TT.LEFT_PAREN, f"Expect ( after {kind} name")
+    params = []
+    while True:
+        if ti.check(TT.RIGHT_PAREN):
+            break
+        if len(params) > 255:
+            error(ti.peek(), "Can't have more than 255 params")
+        params.append(ti.consume(TT.IDENTIFIER, "Expect param name"))
+        if not ti.match(TT.COMMA):
+            break
+    ti.consume(TT.RIGHT_PAREN, "Expect ) after params")
+
+    ti.consume(TT.LEFT_BRACE, "Expect { before " + kind + " body")
+    body = block(ti)
+    return Function(name, params, body.statements)
+
+
 def declaration(ti):
     if ti.match(TT.VAR):
         return varDecl(ti)
+    if ti.match(TT.FUN):
+        return function(ti, "function")
     return statement(ti)
     try:
         if ti.match(TT.VAR):
@@ -170,7 +202,19 @@ def statement(ti) -> Stmt:
         return forStmt(ti)
     if ti.match(TT.BREAK):
         return breakStmt(ti)
+    if ti.match(TT.RETURN):
+        return returnStmt(ti)
     return exprStmt(ti)
+
+
+def returnStmt(ti):
+    keyword = ti.previous()
+    value = None
+    if not ti.check(TT.SEMICOLON):
+        value = expression(ti)
+
+    ti.consume(TT.SEMICOLON, "Expect ; after return statement")
+    return Return(keyword, value)
 
 
 def breakStmt(ti):

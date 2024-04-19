@@ -304,3 +304,32 @@ Version 19 -- function declarations
     call -> primary ( "(" arguments? ")" )*
     arguments -> expression ("," expression)*
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
+    
+Version 20 -- return statements 
+
+    program -> declaration* EOF
+    declaration -> funDecl | varDecl | statement
+    funDecl -> "fun" function
+    function -> IDENTIFIER "(" parameters? ")" block
+    parameters -> IDENTIFIER (, IDENTIFIER)*
+    varDecl -> "var" identifier ("=" expression)? ";"
+    statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt | returnStmt
+    returnStmt -> "return" expression? ";"
+    forStmt -> "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement 
+    whileStmt -> "while" "(" expression ")" statement
+    ifStmt -> "if" "(" expression ")" statement ("else" statement)?
+    block -> "{" declaration* "}"
+    exprStmt -> expression ";"
+    printStmt -> "print" expression ";"
+    expression -> assignment
+    assignment -> IDENTIFIER "=" assignment | logic_or
+    logic_or -> logic_and ("or" logic_and)*
+    logic_and -> ternary ("and" ternary)*
+    ternary -> equality | equality "?" equality : equality 
+    equality -> term (( > | >= | < | <=))*
+    term -> factor (( "-" | "+" ) factor)*
+    factor -> unary (("%" | \" | "*") unary)*
+    unary -> ("!" | "-") unary | call
+    call -> primary ( "(" arguments? ")" )*
+    arguments -> expression ("," expression)*
+    primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER

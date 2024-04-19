@@ -1,11 +1,13 @@
 import time
 import operator
+from abc import ABC, abstractmethod
+from typing import List, Any
 
 from environment import Environment, Undefined
 from expr import ExprVisitor
-from stmt import StmtVisitor
+from stmt import StmtVisitor, Function, Block
 from tokens import TokenType
-from util import BreakException, RuntimeException, LoxFunction
+from util import BreakException, RuntimeException, ReturnException
 
 
 def isTruthy(value):
@@ -62,9 +64,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self):
         self.globals = Environment()
         self.env = self.globals
-        self.globals.define(
-            "clock", LoxFunction(lambda: 0, lambda _, __: time.time_ns())
-        )
+        self.globals.define("clock", ClockFn())
 
     def visitLiteral(self, val):
         return val.value
@@ -138,16 +138,16 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.env.assign(val.name.lexeme, val.value.visit(self))
 
     def visitBlock(self, val):
-        priorEnv = self.env
-        env = Environment(self.env)
+        self.executeBlock(val, Environment(self.env))
+
+    def executeBlock(self, val, env):
+        prior = self.env
         try:
             self.env = env
             for stmt in val.statements:
                 stmt.visit(self)
-
-        except Exception as e:
-            raise e
-        self.env = priorEnv
+        finally:
+            self.env = prior
 
     def visitIfStmt(self, val):
         if isTruthy(val.condition.visit(self)):
@@ -187,6 +187,53 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         return callFunc(self, args)
 
+    def visitFunction(self, val):
+        fn = LoxFunction(val)
+        self.env.define(val.name.lexeme, fn)
+
+    def visitReturn(self, val):
+        value = None
+        if val.expression is not None:
+            value = val.expression.visit(self)
+        raise ReturnException(value)
+
 
 if __name__ == "__main__":
     inpr = Interpreter()
+
+
+class LoxCallable(ABC):
+    @abstractmethod
+    def arity(self) -> int:
+        pass
+
+    @abstractmethod
+    def call(self, inpr: Interpreter, args: List[Any]) -> Any:
+        pass
+
+
+class ClockFn(LoxCallable):
+    def arity(self):
+        return 0
+
+    def call(self, inpr, args):
+        return time.time_ns()
+
+
+class LoxFunction(LoxCallable):
+    def __init__(self, declaration: Function):
+        self.declaration = declaration
+
+    def arity(self):
+        return len(self.declaration.params)
+
+    def call(self, inpr, args):
+        env = Environment(inpr.globals)
+
+        for i in range(self.arity()):
+            env.define(self.declaration.params[i].lexeme, args[i])
+
+        try:
+            inpr.executeBlock(Block(self.declaration.body), env)
+        except ReturnException as e:
+            return e.value

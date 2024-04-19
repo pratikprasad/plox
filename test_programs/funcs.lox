@@ -1,0 +1,28 @@
+fun fizzBuzz() {
+  for (var i = 1; i <= 100; i = i + 1) {
+    if (i % 5 == 0 and i % 3 == 0) {
+      print "FizzBuzz";
+    } else if ( i % 5 == 0 ) {
+      print "Buzz";
+    } else if (i % 3 == 0) {
+      print "Fizz";
+    } else {
+      print i;
+    }
+  }
+}
+
+fizzBuzz();
+
+
+fun fib(n) {
+  if (n <= 2) {
+    return 1;
+  } else {
+    return fib(n-1) + fib(n-2);
+  }
+}
+
+print "fib 10 = " + fib(10);
+print "fib 2 = " + fib(2);
+
