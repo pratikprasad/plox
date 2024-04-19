@@ -188,7 +188,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return callFunc(self, args)
 
     def visitFunction(self, val):
-        fn = LoxFunction(val)
+        fn = LoxFunction(val, self.env)
         if val.name is not None:
             self.env.define(val.name.lexeme, fn)
         return fn
@@ -223,14 +223,15 @@ class ClockFn(LoxCallable):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Function):
+    def __init__(self, declaration: Function, closure: Environment):
         self.declaration = declaration
+        self.closure = closure
 
     def arity(self):
         return len(self.declaration.params)
 
     def call(self, inpr, args):
-        env = Environment(inpr.globals)
+        env = Environment(self.closure)
 
         for i in range(self.arity()):
             env.define(self.declaration.params[i].lexeme, args[i])
