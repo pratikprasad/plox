@@ -73,7 +73,7 @@ class BreakStmt(Stmt):
 
 
 class _Function(NamedTuple):
-    name: Token
+    name: Optional[Token]
     params: List[Token]
     body: List[Stmt]
 

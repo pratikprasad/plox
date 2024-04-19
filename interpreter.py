@@ -189,7 +189,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visitFunction(self, val):
         fn = LoxFunction(val)
-        self.env.define(val.name.lexeme, fn)
+        if val.name is not None:
+            self.env.define(val.name.lexeme, fn)
+        return fn
 
     def visitReturn(self, val):
         value = None

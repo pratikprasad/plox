@@ -1,0 +1,14 @@
+fun thrice(fn) {
+  for (var i = 0; i < 3; i = i + 1) {
+    fn(i);
+  }
+}
+
+thrice(fun (a) {
+  print a;
+});
+
+var lol = fun (a, b) { 
+  print a + b;
+};
+lol(3, 4);

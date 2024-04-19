@@ -85,7 +85,9 @@ class TokenIter:
 
 
 def function(ti, kind):
-    name = ti.consume(TT.IDENTIFIER, f"Expect {kind} name")
+    name = None
+    if kind != "lambda":
+        name = ti.consume(TT.IDENTIFIER, f"Expect {kind} name")
     ti.consume(TT.LEFT_PAREN, f"Expect ( after {kind} name")
     params = []
     while True:
@@ -258,7 +260,9 @@ def logic_and(ti):
 
 
 def assignment(ti):
-    """"""
+    if ti.match(TT.FUN):
+        return function(ti, "lambda")
+
     expr = logic_or(ti)
 
     if ti.match(TT.EQUAL):
