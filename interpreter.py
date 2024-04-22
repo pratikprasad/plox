@@ -1,12 +1,13 @@
 import time
 import operator
 from abc import ABC, abstractmethod
-from typing import List, Any
+from typing import List, Any, Dict
 
 from environment import Environment, Undefined
-from expr import ExprVisitor
+from expr import ExprVisitor, Expr
+from util import ToDoException
 from stmt import StmtVisitor, Function, Block
-from tokens import TokenType
+from tokens import TokenType, Token
 from util import BreakException, RuntimeException, ReturnException
 
 
@@ -59,9 +60,11 @@ NUMBER_BINARY_OPERATIONS = {
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
+    locals: Dict[Expr, int]
     """"""
 
     def __init__(self):
+        self.locals = {}
         self.globals = Environment()
         self.env = self.globals
         self.globals.define("clock", ClockFn())
@@ -126,7 +129,16 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return val.expression.visit(self)
 
     def visitVariable(self, val):
-        return self.env.get(val.name.lexeme)
+        return self.lookupVariable(val.name, val)
+
+    def lookupVariable(self, name: Token, expr: Expr):
+        depth = None
+        if expr in self.locals:
+            depth = self.locals[expr]
+        if depth is None:
+            return self.globals.get(name.lexeme)
+
+        return self.env.getAt(depth, name.lexeme)
 
     def visitVar(self, val):
         value = Undefined
@@ -135,7 +147,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.env.define(val.name.lexeme, value)
 
     def visitAssign(self, val):
-        self.env.assign(val.name.lexeme, val.value.visit(self))
+        value = val.value.visit(self)
+        dist = self.locals.get(val)
+        if dist is not None:
+            self.env.assignAt(dist, val.name, value)
+        else:
+            self.globals.assign(val.name, value)
 
     def visitBlock(self, val):
         self.executeBlock(val, Environment(self.env))
@@ -198,6 +215,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if val.expression is not None:
             value = val.expression.visit(self)
         raise ReturnException(value)
+
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
 
 
 if __name__ == "__main__":

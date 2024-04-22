@@ -1,6 +1,7 @@
 import sys
 from interpreter import Interpreter
 from parser import Parse
+from resolver import Resolver
 
 
 def err(line, message):
@@ -9,7 +10,9 @@ def err(line, message):
 
 def run(content):
     inpr = Interpreter()
+    resolver = Resolver(inpr)
     program = Parse(content)
+    resolver.resolve(program)
     for line in program:
         line.visit(inpr)
 

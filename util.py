@@ -2,6 +2,10 @@ from typing import Any
 from dataclasses import dataclass
 
 
+class ToDoException(Exception):
+    pass
+
+
 @dataclass
 class ReturnException(Exception):
     value: Any

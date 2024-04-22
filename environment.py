@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any
 from util import RuntimeException
+from tokens import Token
 
 
 class Undefined:
@@ -37,3 +38,16 @@ class Environment:
             return self.parent.get(name)
 
         raise RuntimeException(f"Get to undefined variable: {name}")
+
+    def getAt(self, depth: int, name: str) -> Any:
+        return self.ancestor(depth).data[name]
+
+    def ancestor(self, depth: int):
+        cur = self
+        for _ in range(depth):
+            if cur.parent:
+                cur = cur.parent
+        return cur
+
+    def assignAt(self, depth: int, name: Token, value: Any):
+        self.ancestor(depth).data[name.lexeme] = value

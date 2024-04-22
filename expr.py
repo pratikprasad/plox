@@ -94,37 +94,37 @@ class Logical(Expr, _Logical):
 class ExprVisitor(ABC):
 
     @abstractmethod
-    def visitLiteral(self, val: _Literal) -> Any:
+    def visitLiteral(self, val: Literal) -> Any:
         pass
 
     @abstractmethod
-    def visitGrouping(self, val: _Grouping) -> Any:
+    def visitGrouping(self, val: Grouping) -> Any:
         pass
 
     @abstractmethod
-    def visitUnary(self, val: _Unary) -> Any:
+    def visitUnary(self, val: Unary) -> Any:
         pass
 
     @abstractmethod
-    def visitBinary(self, val: _Binary) -> Any:
+    def visitBinary(self, val: Binary) -> Any:
         pass
 
     @abstractmethod
-    def visitTernary(self, val: _Ternary) -> Any:
+    def visitTernary(self, val: Ternary) -> Any:
         pass
 
     @abstractmethod
-    def visitVariable(self, val: _Variable) -> Any:
+    def visitVariable(self, val: Variable) -> Any:
         pass
 
     @abstractmethod
-    def visitAssign(self, val: _Assign) -> Any:
+    def visitAssign(self, val: Assign) -> Any:
         pass
 
     @abstractmethod
-    def visitLogical(self, val: _Logical) -> Any:
+    def visitLogical(self, val: Logical) -> Any:
         pass
 
     @abstractmethod
-    def visitCall(self, val: _Call) -> Any:
+    def visitCall(self, val: Call) -> Any:
         pass
