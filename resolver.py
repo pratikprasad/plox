@@ -6,6 +6,10 @@ from stmt import Function, StmtVisitor, Stmt
 from interpreter import Interpreter
 from logging import error
 
+from printer import ExprPrinter
+
+prnt = ExprPrinter()
+
 
 class Resolver(ExprVisitor, StmtVisitor):
     scopes: List[Dict[str, bool]]
@@ -15,10 +19,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.interpreter = interpreter
         self.scopes = []
 
-    def beginScope(self):
+    def beginScope(self, name):
+        print("scope begins", name)
         self.scopes.append({})
 
-    def endScope(self):
+    def endScope(self, name):
+        print("scope ends", name)
         self.scopes.pop()
 
     def resolve(self, val: Union[List[Stmt], Stmt, Expr]):
@@ -29,17 +35,21 @@ class Resolver(ExprVisitor, StmtVisitor):
             val.visit(self)
 
     def visitBlock(self, val):
-        self.beginScope()
+        self.beginScope(
+            "block ---" + val.visit(prnt),
+        )
         self.resolve(val.statements)
-        self.endScope()
+        self.endScope("--- block")
 
     def declare(self, val: Token):
+        print(f"declaring val: {val.lexeme}, scope: {self.scopes}")
         if len(self.scopes) == 0:
             return
         scope = self.scopes[-1]
         scope[val.lexeme] = False
 
     def define(self, val: Token):
+        print(f"defining val: {val.lexeme}, scope: {self.scopes}")
         if len(self.scopes) == 0:
             return
         self.scopes[-1][val.lexeme] = True
@@ -51,13 +61,19 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.define(val.name)
 
     def resolveLocal(self, val: Expr, name: Token):
-        for i in range(len(self.scopes)):
+        print("resolve local", self.scopes)
+        for i in range(len(self.scopes) - 1, -1, -1):
             if name.lexeme in self.scopes[i]:
                 self.interpreter.resolve(val, len(self.scopes) - i - 1)
                 return
 
     def visitVariable(self, val):
-        if not self.scopes and self.scopes[-1][val.name.lexeme] == False:
+        print("visit variable", val.visit(prnt), self.scopes)
+        if (
+            len(self.scopes) > 0
+            and val.name.lexeme in self.scopes[-1]
+            and self.scopes[-1][val.name.lexeme] == False
+        ):
             error(val.name, "Can't read local variable in its own initalizer")
         self.resolveLocal(val, val.name)
 
@@ -66,12 +82,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolveLocal(val, val.name)
 
     def resolveFunction(self, val: Function):
-        self.beginScope()
+        self.beginScope("func ---" + val.visit(prnt))
         for param in val.params:
             self.declare(param)
             self.define(param)
         self.resolve(val.body)
-        self.endScope()
+        self.endScope("--- func")
 
     def visitFunction(self, val):
         if val.name:

@@ -152,7 +152,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if dist is not None:
             self.env.assignAt(dist, val.name, value)
         else:
-            self.globals.assign(val.name, value)
+            self.globals.assign(val.name.lexeme, value)
 
     def visitBlock(self, val):
         self.executeBlock(val, Environment(self.env))
