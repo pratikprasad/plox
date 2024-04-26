@@ -78,7 +78,7 @@ class _Function(NamedTuple):
     body: List[Stmt]
 
 
-class Function(Stmt, _Function):
+class Function(Expr, Stmt, _Function):
     pass
 
 
