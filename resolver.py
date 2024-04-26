@@ -42,14 +42,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.endScope("--- block")
 
     def declare(self, val: Token):
-        print(f"declaring val: {val.lexeme}, scope: {self.scopes}")
         if len(self.scopes) == 0:
             return
         scope = self.scopes[-1]
         scope[val.lexeme] = False
 
     def define(self, val: Token):
-        print(f"defining val: {val.lexeme}, scope: {self.scopes}")
         if len(self.scopes) == 0:
             return
         self.scopes[-1][val.lexeme] = True
@@ -61,14 +59,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.define(val.name)
 
     def resolveLocal(self, val: Expr, name: Token):
-        print("resolve local", self.scopes)
         for i in range(len(self.scopes) - 1, -1, -1):
             if name.lexeme in self.scopes[i]:
                 self.interpreter.resolve(val, len(self.scopes) - i - 1)
                 return
 
     def visitVariable(self, val):
-        print("visit variable", val.visit(prnt), self.scopes)
         if (
             len(self.scopes) > 0
             and val.name.lexeme in self.scopes[-1]
