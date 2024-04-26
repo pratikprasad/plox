@@ -30,3 +30,6 @@ class Visitable:
                 f"Class {vis.__class__.__name__} is missing a function with name: {funcName}"
             )
         return func(self)
+
+    def __hash__(self):
+        return hash(id(self))

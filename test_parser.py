@@ -171,6 +171,10 @@ class TestWhile(unittest.TestCase):
             "(while True (print 3.0))",
         )
         self.assertEqual(
+            PolishNotation("""{var i = 0; while ( i <5 ) { print i; i = i + 1 ; }}"""),
+            "(while True (print 3.0))",
+        )
+        self.assertEqual(
             PolishNotation(
                 """
             while (a == b) {
