@@ -8,7 +8,7 @@
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "test": [
