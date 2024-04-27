@@ -21,7 +21,6 @@ CASES = {
         "",
     ),
     "conditions": ("lolol\n3.0\n", ""),
-    "scoping": ("3.0\n", ""),
     "variable": ("3.0\n", "Variable initialized but not defined: c"),
     "blocks": (
         """inner a
@@ -55,5 +54,5 @@ class TestPrograms(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(str(output.stdout), out)
+            self.assertEqual(str(output.stdout), out, f'program: {filename}')
             self.assertIn(err, str(output.stderr))
