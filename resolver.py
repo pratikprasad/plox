@@ -19,12 +19,10 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.interpreter = interpreter
         self.scopes = []
 
-    def beginScope(self, name):
-        print("scope begins", name)
+    def beginScope(self):
         self.scopes.append({})
 
-    def endScope(self, name):
-        print("scope ends", name)
+    def endScope(self):
         self.scopes.pop()
 
     def resolve(self, val: Union[List[Stmt], Stmt, Expr]):
@@ -35,11 +33,9 @@ class Resolver(ExprVisitor, StmtVisitor):
             val.visit(self)
 
     def visitBlock(self, val):
-        self.beginScope(
-            "block ---" + val.visit(prnt),
-        )
+        self.beginScope()
         self.resolve(val.statements)
-        self.endScope("--- block")
+        self.endScope()
 
     def declare(self, val: Token):
         if len(self.scopes) == 0:
@@ -78,12 +74,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolveLocal(val, val.name)
 
     def resolveFunction(self, val: Function):
-        self.beginScope("func ---" + val.visit(prnt))
+        self.beginScope()
         for param in val.params:
             self.declare(param)
             self.define(param)
         self.resolve(val.body)
-        self.endScope("--- func")
+        self.endScope()
 
     def visitFunction(self, val):
         if val.name:
@@ -98,7 +94,7 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(val.condition)
         self.resolve(val.thenBranch)
         if val.elseBranch:
-            self.resolve(val)
+            self.resolve(val.elseBranch)
 
     def visitPrint(self, val):
         self.resolve(val.expression)
