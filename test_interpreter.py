@@ -41,3 +41,28 @@ class TestInterpreter(unittest.TestCase):
         nil or a and b;
         """
         self.assertEqual(getLines(program)[-1], False)
+
+    def testClass(self):
+        program = """
+        class Pebbles {
+            barf() {
+                return "barfo";
+            }
+        }
+        Pebbles;
+        Pebbles();
+        """
+        self.assertEqual(repr(getLines(program)[-2]), "Pebbles")
+        self.assertEqual(repr(getLines(program)[-1]), "Pebbles instance")
+
+        program = """
+        class Pebbles {
+            barf() {
+                return "barfo";
+            }
+        }
+        var peb = Pebbles();
+        peb.age = "8 months";
+        peb.age;
+        """
+        self.assertEqual(getLines(program)[-1], "8 months")

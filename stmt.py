@@ -90,6 +90,12 @@ class _Return(NamedTuple):
 class Return(Stmt, _Return):
     pass
 
+class _Class(NamedTuple):
+    name: Token
+    methods: List[Function]
+
+class Class(Stmt, _Class):
+    pass
 
 class StmtVisitor(ABC):
     @abstractmethod
@@ -126,4 +132,8 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visitReturn(self, val: Return) -> Any:
+        pass
+
+    @abstractmethod
+    def visitClass(self, val: Class) -> Any:
         pass

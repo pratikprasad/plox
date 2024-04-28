@@ -96,6 +96,10 @@ class Resolver(ExprVisitor, StmtVisitor):
         if val.elseBranch:
             self.resolve(val.elseBranch)
 
+    def visitClass(self, val):
+        self.declare(val.name)
+        self.define(val.name)
+
     def visitPrint(self, val):
         self.resolve(val.expression)
 
@@ -118,6 +122,13 @@ class Resolver(ExprVisitor, StmtVisitor):
 
     def visitGrouping(self, val):
         self.resolve(val.expr)
+
+    def visitGet(self, val):
+        self.resolve(val.obj)
+
+    def visitSet(self, val):
+        self.resolve(val.val)
+        self.resolve(val.obj)
 
     def visitBreakStmt(self, val):
         return

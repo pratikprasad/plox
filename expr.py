@@ -91,7 +91,30 @@ class Logical(Expr, _Logical):
     pass
 
 
+class _Get(NamedTuple):
+    obj: Expr
+    name: Token
+
+class Get(Expr, _Get):
+    pass
+
+class _Set(NamedTuple):
+    obj: Expr
+    name: Token
+    val: Expr
+
+class Set(Expr, _Set):
+    pass
+
 class ExprVisitor(ABC):
+
+    @abstractmethod
+    def visitSet(self, val: Set) -> Any:
+        pass
+
+    @abstractmethod
+    def visitGet(self, val: Get) -> Any:
+        pass
 
     @abstractmethod
     def visitLiteral(self, val: Literal) -> Any:

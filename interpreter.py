@@ -1,7 +1,7 @@
 import time
 import operator
 from abc import ABC, abstractmethod
-from typing import List, Any, Dict
+from typing import List, Any, Dict, NamedTuple
 
 from environment import Environment, Undefined
 from expr import ExprVisitor, Expr
@@ -166,6 +166,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
         finally:
             self.env = prior
 
+    def visitClass(self, val):
+        self.env.define(val.name.lexeme, None)
+        klass = LoxClass(val.name.lexeme)
+        self.env.assign(val.name.lexeme, klass)
+
     def visitIfStmt(self, val):
         if isTruthy(val.condition.visit(self)):
             return val.thenBranch.visit(self)
@@ -216,6 +221,21 @@ class Interpreter(ExprVisitor, StmtVisitor):
             value = val.expression.visit(self)
         raise ReturnException(value)
 
+    def visitGet(self, val):
+        obj = val.obj.visit(self)
+        if type(obj) is not LoxInstance:
+            raise RuntimeError("Only instances can have proerties")
+
+        return obj.get(val.name)
+
+    def visitSet(self, val):
+        obj = val.obj.visit(self)
+        if type(obj) != LoxInstance:
+            raise RuntimeError("Only instances have fields")
+        value = val.val.visit(self)
+        obj.set(val.name, value)
+        return val
+
     def resolve(self, expr: Expr, depth: int):
         self.locals[expr] = depth
 
@@ -227,11 +247,11 @@ if __name__ == "__main__":
 class LoxCallable(ABC):
     @abstractmethod
     def arity(self) -> int:
-        pass
+        raise Exception("not implemented")
 
     @abstractmethod
     def call(self, inpr: Interpreter, args: List[Any]) -> Any:
-        pass
+        raise Exception("not implemented")
 
 
 class ClockFn(LoxCallable):
@@ -260,3 +280,36 @@ class LoxFunction(LoxCallable):
             inpr.executeBlock(Block(self.declaration.body), env)
         except ReturnException as e:
             return e.value
+
+
+class _LoxClass(NamedTuple):
+    name: str
+
+class LoxClass(_LoxClass, LoxCallable):
+    def __repr__(self):
+        return self.name
+
+    def arity(self):
+        return 0
+
+    def call(self, inpr, args): 
+        # TODO: should LoxInstance have a custom __init__ function?
+        return LoxInstance(self, {})
+
+class _LoxInstance(NamedTuple):
+    klass: LoxClass
+    fields: Dict[str, Any]
+
+class LoxInstance(_LoxInstance):
+
+    def __repr__(self):
+        return f"{self.klass.name} instance"
+    
+    def get(self, name:Token) -> Any:
+        if name.lexeme not in self.fields:
+            raise RuntimeError(f"Field '{name.lexeme}' is not in class instance of {self.klass.name}")
+
+        return self.fields[name.lexeme]
+
+    def set(self, name:Token, value: Any):
+        self.fields[name.lexeme] = value

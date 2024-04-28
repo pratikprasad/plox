@@ -66,12 +66,20 @@ class ExprPrinter(ExprVisitor, StmtVisitor):
 
     def visitFunction(self, val):
         return (
-            f"<func {val.name} (args {', '.join((arg.lexeme for arg in val.params))} )>"
+            f"<func {val.name and val.name.lexeme} (args {', '.join((arg.lexeme for arg in val.params))} )>"
         )
 
     def visitReturn(self, val):
         return f"(return {val.expression.visit(self) if val.expression is not None else None})"
 
+    def visitClass(self, val):
+        return f"(class {val.name.lexeme} {[fn.visit(self) for fn in val.methods]})"
+
+    def visitGet(self, val):
+        return f"(get {val.name.lexeme} {val.obj.visit(self)})"
+
+    def visitSet(self, val):
+        return f"(set {val.name.lexeme} {val.obj.visit(self)} {val.val.visit(self)})"
 
 def PolishNotation(expression):
     """Parses text and returns the polish notation"""

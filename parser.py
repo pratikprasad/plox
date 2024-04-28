@@ -3,6 +3,8 @@ from typing import List
 from dataclasses import dataclass
 
 from expr import (
+    Get,
+    Set,
     Unary,
     Binary,
     Literal,
@@ -24,6 +26,7 @@ from stmt import (
     Block,
     IfStmt,
     WhileStmt,
+    Class
 )
 from tokens import TokenType as TT, Token
 from scanner import Scanner
@@ -104,8 +107,19 @@ def function(ti, kind):
     body = block(ti)
     return Function(name, params, body.statements)
 
+def classDecl(ti):
+    name = ti.consume(TT.IDENTIFIER, "Expect class name")
+    ti.consume(TT.LEFT_BRACE, "Expect { before class body")
+    methods = []
+    while (not ti.check(TT.RIGHT_BRACE) and not ti.isAtEnd()):
+        methods.append(function(ti, "method"))
+    ti.consume(TT.RIGHT_BRACE, "Expect } after class body")
+
+    return Class(name, methods)
 
 def declaration(ti):
+    if ti.match(TT.CLASS):
+        return classDecl(ti)
     if ti.match(TT.VAR):
         return varDecl(ti)
     if ti.match(TT.FUN):
@@ -272,6 +286,9 @@ def assignment(ti):
         if type(expr) == Variable:
             name = expr.name
             return Assign(name, value)
+        if type(expr) == Get:
+            get = expr
+            return Set(get.obj, get.name, value)
 
         raise Exception(f"invalid assignment target: {eql}")
     return expr
@@ -332,6 +349,9 @@ def call(ti):
     while True:
         if ti.match(TT.LEFT_PAREN):
             expr = finishCall(ti, expr)
+        elif ti.match(TT.DOT):
+            name = ti.consume(TT.IDENTIFIER, "Expect property name after '.'")
+            expr = Get(expr, name)
         else:
             break
     return expr
