@@ -64,5 +64,7 @@ class TestInterpreter(unittest.TestCase):
         var peb = Pebbles();
         peb.age = "8 months";
         peb.age;
+        peb.barf();
         """
-        self.assertEqual(getLines(program)[-1], "8 months")
+        self.assertEqual(getLines(program)[-2], "8 months")
+        self.assertEqual(getLines(program)[-1], "barfo")

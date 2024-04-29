@@ -26,7 +26,7 @@ from stmt import (
     Block,
     IfStmt,
     WhileStmt,
-    Class
+    Class,
 )
 from tokens import TokenType as TT, Token
 from scanner import Scanner
@@ -107,15 +107,17 @@ def function(ti, kind):
     body = block(ti)
     return Function(name, params, body.statements)
 
+
 def classDecl(ti):
     name = ti.consume(TT.IDENTIFIER, "Expect class name")
     ti.consume(TT.LEFT_BRACE, "Expect { before class body")
     methods = []
-    while (not ti.check(TT.RIGHT_BRACE) and not ti.isAtEnd()):
+    while not ti.check(TT.RIGHT_BRACE) and not ti.isAtEnd():
         methods.append(function(ti, "method"))
     ti.consume(TT.RIGHT_BRACE, "Expect } after class body")
 
     return Class(name, methods)
+
 
 def declaration(ti):
     if ti.match(TT.CLASS):

@@ -1,4 +1,4 @@
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 
 from tokens import Token
 from expr import ExprVisitor, Expr
@@ -14,6 +14,7 @@ prnt = ExprPrinter()
 class Resolver(ExprVisitor, StmtVisitor):
     scopes: List[Dict[str, bool]]
     interpreter: Interpreter
+    currentFunction = None
 
     def __init__(self, interpreter):
         self.interpreter = interpreter
@@ -73,7 +74,10 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(val.value)
         self.resolveLocal(val, val.name)
 
-    def resolveFunction(self, val: Function):
+    # TODO: function type should be an enum
+    def resolveFunction(self, val: Function, type: Optional[str] = None):
+        self.currentFunction = type
+
         self.beginScope()
         for param in val.params:
             self.declare(param)
@@ -99,12 +103,18 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visitClass(self, val):
         self.declare(val.name)
         self.define(val.name)
+        for method in val.methods:
+            self.resolveFunction(method, "method")
 
     def visitPrint(self, val):
         self.resolve(val.expression)
 
     def visitReturn(self, val):
-        if val.expression:
+        if self.currentFunction is None:
+            raise Exception(
+                "cant return from top-level"
+            )  # should this be error vs runtime code?
+        if val.expression is not None:
             self.resolve(val.expression)
 
     def visitWhileStmt(self, val):

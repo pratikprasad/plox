@@ -195,6 +195,7 @@ class TestWhile(unittest.TestCase):
             ),
             "(while (== (var a) (var b)) (block (print (var a)) (print (var b)) (break) (print (var c)) (print (or (+ (var a) (var b)) False))))",
         )
+
     def testClasses(self):
         program = """
         class Cat {
@@ -206,13 +207,19 @@ class TestWhile(unittest.TestCase):
         c.name = "Pebbles";
         """
         exprs = parser.Parse(program)
-        formatted = [
-            exp.visit(ExprPrinter())
-            for exp in exprs
-        ]
-        self.assertEqual(formatted[0], "(class Cat ['<func eat (args  )>'])",)
-        self.assertEqual(formatted[1], "(var c (call (var Cat) (args ))",)
-        self.assertEqual(formatted[2], "(set name (var c) 'Pebbles')",)
+        formatted = [exp.visit(ExprPrinter()) for exp in exprs]
+        self.assertEqual(
+            formatted[0],
+            "(class Cat ['<func eat (args  )>'])",
+        )
+        self.assertEqual(
+            formatted[1],
+            "(var c (call (var Cat) (args ))",
+        )
+        self.assertEqual(
+            formatted[2],
+            "(set name (var c) 'Pebbles')",
+        )
         self.assertEqual(len(formatted), 3)
 
 

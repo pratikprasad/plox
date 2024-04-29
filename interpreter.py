@@ -168,7 +168,17 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visitClass(self, val):
         self.env.define(val.name.lexeme, None)
-        klass = LoxClass(val.name.lexeme)
+        methods = dict(
+            [
+                (
+                    method.name and method.name.lexeme or "",
+                    LoxFunction(method, self.env),
+                )
+                for method in val.methods
+            ]
+        )
+        klass = LoxClass(val.name.lexeme, methods)
+
         self.env.assign(val.name.lexeme, klass)
 
     def visitIfStmt(self, val):
@@ -284,6 +294,8 @@ class LoxFunction(LoxCallable):
 
 class _LoxClass(NamedTuple):
     name: str
+    methods: Dict[str, LoxFunction]
+
 
 class LoxClass(_LoxClass, LoxCallable):
     def __repr__(self):
@@ -292,24 +304,34 @@ class LoxClass(_LoxClass, LoxCallable):
     def arity(self):
         return 0
 
-    def call(self, inpr, args): 
+    def call(self, inpr, args):
         # TODO: should LoxInstance have a custom __init__ function?
         return LoxInstance(self, {})
+
+    def findMethod(self, name: str):
+        return self.methods.get(name, None)
+
 
 class _LoxInstance(NamedTuple):
     klass: LoxClass
     fields: Dict[str, Any]
 
+
 class LoxInstance(_LoxInstance):
 
     def __repr__(self):
         return f"{self.klass.name} instance"
-    
-    def get(self, name:Token) -> Any:
-        if name.lexeme not in self.fields:
-            raise RuntimeError(f"Field '{name.lexeme}' is not in class instance of {self.klass.name}")
 
-        return self.fields[name.lexeme]
+    def get(self, name: Token) -> Any:
+        if name.lexeme in self.fields:
+            return self.fields[name.lexeme]
 
-    def set(self, name:Token, value: Any):
+        method = self.klass.findMethod(name.lexeme)
+        if method is not None:
+            return method
+        raise RuntimeError(
+            f"Field '{name.lexeme}' is not in class instance of {self.klass.name}"
+        )
+
+    def set(self, name: Token, value: Any):
         self.fields[name.lexeme] = value
