@@ -1,4 +1,5 @@
 from typing import List, Dict, Union, Optional
+from enum import Enum
 
 from tokens import Token
 from expr import ExprVisitor, Expr
@@ -11,6 +12,11 @@ from printer import ExprPrinter
 prnt = ExprPrinter()
 
 
+class ClassType(Enum):
+    NONE = None
+    CLASS = "CLASS"
+
+
 class Resolver(ExprVisitor, StmtVisitor):
     scopes: List[Dict[str, bool]]
     interpreter: Interpreter
@@ -19,6 +25,7 @@ class Resolver(ExprVisitor, StmtVisitor):
     def __init__(self, interpreter):
         self.interpreter = interpreter
         self.scopes = []
+        self.currentClass = ClassType.NONE
 
     def beginScope(self):
         self.scopes.append({})
@@ -101,10 +108,20 @@ class Resolver(ExprVisitor, StmtVisitor):
             self.resolve(val.elseBranch)
 
     def visitClass(self, val):
+        enclosingClass = self.currentClass
+        self.currentClass = ClassType.CLASS
         self.declare(val.name)
         self.define(val.name)
+
+        self.beginScope()
+        self.scopes[-1]["this"] = True
         for method in val.methods:
-            self.resolveFunction(method, "method")
+            kind = "method"
+            if method.name and method.name.lexeme == "init":
+                kind = "initialzer"
+            self.resolveFunction(method, kind)
+        self.endScope()
+        self.currentClass = enclosingClass
 
     def visitPrint(self, val):
         self.resolve(val.expression)
@@ -115,6 +132,8 @@ class Resolver(ExprVisitor, StmtVisitor):
                 "cant return from top-level"
             )  # should this be error vs runtime code?
         if val.expression is not None:
+            if self.currentFunction == "initialzer":
+                raise Exception("can't return a value from an initializer")
             self.resolve(val.expression)
 
     def visitWhileStmt(self, val):
@@ -139,6 +158,12 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visitSet(self, val):
         self.resolve(val.val)
         self.resolve(val.obj)
+
+    def visitThis(self, val):
+        if self.currentClass == ClassType.NONE:
+            error("Can't use 'this' outside of a class")
+
+        self.resolveLocal(val, val.keyword)
 
     def visitBreakStmt(self, val):
         return

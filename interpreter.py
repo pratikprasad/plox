@@ -172,7 +172,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
             [
                 (
                     method.name and method.name.lexeme or "",
-                    LoxFunction(method, self.env),
+                    LoxFunction(
+                        method,
+                        self.env,
+                        bool(method.name and method.name.lexeme == "init"),
+                    ),
                 )
                 for method in val.methods
             ]
@@ -246,6 +250,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj.set(val.name, value)
         return val
 
+    def visitThis(self, val):
+        return self.lookupVariable(val.keyword, val)
+
     def resolve(self, expr: Expr, depth: int):
         self.locals[expr] = depth
 
@@ -273,9 +280,10 @@ class ClockFn(LoxCallable):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Function, closure: Environment):
+    def __init__(self, declaration: Function, closure: Environment, isintializer=False):
         self.declaration = declaration
         self.closure = closure
+        self.isintializer = False
 
     def arity(self):
         return len(self.declaration.params)
@@ -289,7 +297,15 @@ class LoxFunction(LoxCallable):
         try:
             inpr.executeBlock(Block(self.declaration.body), env)
         except ReturnException as e:
+            if self.isintializer:
+                return self.closure.getAt(0, "this")
             return e.value
+
+    def bind(self, instance):
+        env = Environment(self.closure)
+        env.define("this", instance)
+        # raise Exception(str(env.data))
+        return LoxFunction(self.declaration, env, self.isintializer)
 
 
 class _LoxClass(NamedTuple):
@@ -302,11 +318,17 @@ class LoxClass(_LoxClass, LoxCallable):
         return self.name
 
     def arity(self):
-        return 0
+        initializer = self.findMethod("init")
+        if initializer is None:
+            return 0
+        return initializer.arity()
 
     def call(self, inpr, args):
-        # TODO: should LoxInstance have a custom __init__ function?
-        return LoxInstance(self, {})
+        instance = LoxInstance(self, {})
+        initializer = self.findMethod("init")
+        if initializer is not None:
+            initializer.bind(instance).call(inpr, args)
+        return instance
 
     def findMethod(self, name: str):
         return self.methods.get(name, None)
@@ -328,7 +350,8 @@ class LoxInstance(_LoxInstance):
 
         method = self.klass.findMethod(name.lexeme)
         if method is not None:
-            return method
+            return method.bind(self)
+
         raise RuntimeError(
             f"Field '{name.lexeme}' is not in class instance of {self.klass.name}"
         )

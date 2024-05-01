@@ -3,6 +3,7 @@ from typing import List
 from dataclasses import dataclass
 
 from expr import (
+    This,
     Get,
     Set,
     Unary,
@@ -382,6 +383,8 @@ def primary(ti: TokenIter):
         return Literal(True)
     if ti.match(TT.NIL):
         return Literal(None)
+    if ti.match(TT.THIS):
+        return This(ti.previous())
 
     if ti.match(TT.STRING, TT.NUMBER):
         return Literal(ti.previous().literal)

@@ -1,11 +1,14 @@
 import unittest
 from interpreter import Interpreter
 from parser import Parse
+from resolver import Resolver
 
 
 def getLines(program):
     expr = Parse(program)
     inpr = Interpreter()
+    resolver = Resolver(inpr)
+    resolver.resolve(expr)
     return [line.visit(inpr) for line in expr]
 
 
@@ -68,3 +71,33 @@ class TestInterpreter(unittest.TestCase):
         """
         self.assertEqual(getLines(program)[-2], "8 months")
         self.assertEqual(getLines(program)[-1], "barfo")
+
+        program = """
+        class Cake {
+            taste() {
+                var adj = "delicioous";
+                return "The " + this.flavor + " cake is " + adj + ".";
+            }
+        }
+
+        var cho = Cake();
+        cho.flavor = "chocolate";
+        cho.taste();
+        """
+        self.assertEqual(getLines(program)[-1], "The chocolate cake is delicioous.")
+
+    def testClassContstruction(self):
+        program = """
+        class Cake {
+            init(name) {
+                this.name = name;
+            }
+
+            str() {
+                return "Hi, I'm a cake named: " + this.name;
+            }
+        }
+        var cho = Cake("patrick");
+        cho.str();
+        """
+        self.assertEqual(getLines(program)[-1], "Hi, I'm a cake named: patrick")

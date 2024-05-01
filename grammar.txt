@@ -3,7 +3,6 @@ Version 1
     expression -> primary
     primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
 
-
 Version 2
 
     expression -> unary

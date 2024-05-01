@@ -95,18 +95,34 @@ class _Get(NamedTuple):
     obj: Expr
     name: Token
 
+
 class Get(Expr, _Get):
     pass
+
 
 class _Set(NamedTuple):
     obj: Expr
     name: Token
     val: Expr
 
+
 class Set(Expr, _Set):
     pass
 
+
+class _This(NamedTuple):
+    keyword: Token
+
+
+class This(_This, Expr):
+    pass
+
+
 class ExprVisitor(ABC):
+
+    @abstractmethod
+    def visitThis(self, val: This) -> Any:
+        pass
 
     @abstractmethod
     def visitSet(self, val: Set) -> Any:
