@@ -101,3 +101,21 @@ class TestInterpreter(unittest.TestCase):
         cho.str();
         """
         self.assertEqual(getLines(program)[-1], "Hi, I'm a cake named: patrick")
+
+    def testInheritance(self):
+        program = """
+        class Donut {
+            cook() {
+                return "fry until golden brown";
+            }
+        }
+        class CreamDonut < Donut {
+            cook() {
+                return super.cook() + "\n add cream obviously";
+            }
+        }
+        CreamDonut().cook();
+        """
+        self.assertEqual(
+            getLines(program)[-1], "fry until golden brown\n add cream obviously"
+        )

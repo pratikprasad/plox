@@ -167,6 +167,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
             self.env = prior
 
     def visitClass(self, val):
+        superclass = None
+
+        if val.superclass is not None:
+            superclass = val.superclass.visit(self)
+            if type(superclass) is not LoxClass:
+                raise RuntimeException("superclass must be a class")
+            self.env.define("super", superclass)
+
         self.env.define(val.name.lexeme, None)
         methods = dict(
             [
@@ -181,9 +189,23 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 for method in val.methods
             ]
         )
-        klass = LoxClass(val.name.lexeme, methods)
+        klass = LoxClass(val.name.lexeme, methods, superclass)
+        if (
+            superclass is not None and self.env and self.env.parent
+        ):  # lot of defensiveness
+            self.env = self.env.parent
 
         self.env.assign(val.name.lexeme, klass)
+
+    def visitSuper(self, val):
+        distance = self.locals.get(val, 0)
+        superclass = self.env.getAt(distance, "super")
+        obj = self.env.getAt(distance - 1, "this")
+        method = superclass.findMethod(val.method.lexeme)
+        if method is None:
+            raise Exception(f"undefined method: {method}")
+
+        return method.bind(obj)
 
     def visitIfStmt(self, val):
         if isTruthy(val.condition.visit(self)):
@@ -311,6 +333,7 @@ class LoxFunction(LoxCallable):
 class _LoxClass(NamedTuple):
     name: str
     methods: Dict[str, LoxFunction]
+    superclass: Any
 
 
 class LoxClass(_LoxClass, LoxCallable):
@@ -331,7 +354,10 @@ class LoxClass(_LoxClass, LoxCallable):
         return instance
 
     def findMethod(self, name: str):
-        return self.methods.get(name, None)
+        if name in self.methods:
+            return self.methods.get(name, None)
+        if self.superclass is not None:
+            return self.superclass.findMethod(name)
 
 
 class _LoxInstance(NamedTuple):
@@ -352,6 +378,7 @@ class LoxInstance(_LoxInstance):
         if method is not None:
             return method.bind(self)
 
+        print(name, self.fields, self.klass.methods)
         raise RuntimeError(
             f"Field '{name.lexeme}' is not in class instance of {self.klass.name}"
         )

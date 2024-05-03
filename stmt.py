@@ -1,4 +1,4 @@
-from expr import Expr
+from expr import Expr, Variable
 from tokens import Token
 from typing import NamedTuple, Optional, Any, List
 
@@ -90,12 +90,16 @@ class _Return(NamedTuple):
 class Return(Stmt, _Return):
     pass
 
+
 class _Class(NamedTuple):
     name: Token
     methods: List[Function]
+    superclass: Optional[Variable]
+
 
 class Class(Stmt, _Class):
     pass
+
 
 class StmtVisitor(ABC):
     @abstractmethod

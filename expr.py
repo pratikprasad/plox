@@ -118,6 +118,15 @@ class This(_This, Expr):
     pass
 
 
+class _Super(NamedTuple):
+    keyword: Token
+    method: Token
+
+
+class Super(_Super, Expr):
+    pass
+
+
 class ExprVisitor(ABC):
 
     @abstractmethod

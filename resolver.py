@@ -113,18 +113,37 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.declare(val.name)
         self.define(val.name)
 
+        if val.superclass is not None:
+            if val.superclass.name.lexeme == val.name.lexeme:
+                raise Exception(
+                    f"A class cannot inherit from itself: {val.name.lexeme}"
+                )
+            self.resolve(val.superclass)
+
+        if val.superclass is not None:
+            self.beginScope()
+            self.scopes[-1]["super"] = True
+
         self.beginScope()
         self.scopes[-1]["this"] = True
+
         for method in val.methods:
             kind = "method"
             if method.name and method.name.lexeme == "init":
                 kind = "initialzer"
             self.resolveFunction(method, kind)
         self.endScope()
+
+        if val.superclass is not None:
+            self.endScope()
+
         self.currentClass = enclosingClass
 
     def visitPrint(self, val):
         self.resolve(val.expression)
+
+    def visitSuper(self, val):
+        self.resolveLocal(val, val.keyword)
 
     def visitReturn(self, val):
         if self.currentFunction is None:

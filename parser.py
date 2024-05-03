@@ -3,6 +3,7 @@ from typing import List
 from dataclasses import dataclass
 
 from expr import (
+    Super,
     This,
     Get,
     Set,
@@ -111,13 +112,20 @@ def function(ti, kind):
 
 def classDecl(ti):
     name = ti.consume(TT.IDENTIFIER, "Expect class name")
+
+    superclass = None
+    if ti.match(TT.LESS):
+        ti.consume(TT.IDENTIFIER, "expect subclass name")
+        superclass = Variable(ti.previous())
+
     ti.consume(TT.LEFT_BRACE, "Expect { before class body")
+
     methods = []
     while not ti.check(TT.RIGHT_BRACE) and not ti.isAtEnd():
         methods.append(function(ti, "method"))
     ti.consume(TT.RIGHT_BRACE, "Expect } after class body")
 
-    return Class(name, methods)
+    return Class(name, methods, superclass)
 
 
 def declaration(ti):
@@ -383,6 +391,11 @@ def primary(ti: TokenIter):
         return Literal(True)
     if ti.match(TT.NIL):
         return Literal(None)
+    if ti.match(TT.SUPER):
+        keyword = ti.previous()
+        ti.consume(TT.DOT, "Expect '.' after super")
+        method = ti.consume(TT.IDENTIFIER, "expect superclass method name")
+        return Super(keyword, method)
     if ti.match(TT.THIS):
         return This(ti.previous())
 
